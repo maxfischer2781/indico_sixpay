@@ -30,13 +30,13 @@ from .. import urlHandlers as localUrlHandlers
 from ... import MODULE_ID
 
 
-class WPConfModifEPaymentYellowPayBase(registrationForm.WPConfModifRegFormBase):
+class WPConfModifEPaymentSixPayBase(registrationForm.WPConfModifRegFormBase):
     def _createTabCtrl(self):
         self._tabCtrl = wcomponents.TabControl()
         self._tabMain = self._tabCtrl.newTab(
             "main",
             "Main",
-            localUrlHandlers.UHConfModifEPaymentYellowPay.getURL(self._conf)
+            localUrlHandlers.UHConfModifEPaymentSixPay.getURL(self._conf)
         )
         wf = self._rh.getWebFactory()
         if wf:
@@ -60,55 +60,55 @@ class WPConfModifEPaymentYellowPayBase(registrationForm.WPConfModifRegFormBase):
         return "nothing"
 
 
-class WPConfModifEPaymentYellowPay(WPConfModifEPaymentYellowPayBase):
+class WPConfModifEPaymentSixPay(WPConfModifEPaymentSixPayBase):
     def _getTabContent(self, params):
-        wc = WConfModifEPaymentYellowPay(self._conf)
+        wc = WConfModifEPaymentSixPay(self._conf)
         p = {
             'dataModificationURL': quoteattr(
-                str(localUrlHandlers.UHConfModifEPaymentYellowPayDataModif.getURL(self._conf)))
+                str(localUrlHandlers.UHConfModifEPaymentSixPayDataModif.getURL(self._conf)))
         }
         return wc.getHTML(p)
 
 
-class WConfModifEPaymentYellowPay(WTemplated):
+class WConfModifEPaymentSixPay(WTemplated):
     def __init__(self, conference):
         self._conf = conference
 
     def getVars(self):
         vars = WTemplated.getVars(self)
-        modYellowPay = self._conf.getModPay().getPayModByTag(MODULE_ID)
-        vars["title"] = modYellowPay.getTitle()
-        vars["url"] = modYellowPay.getUrl()
-        vars["shopid"] = modYellowPay.getShopID()
-        vars["mastershopid"] = modYellowPay.getMasterShopID()
-        vars["hashseed"] = modYellowPay.getHashSeed()
+        modSixPay = self._conf.getModPay().getPayModByTag(MODULE_ID)
+        vars["title"] = modSixPay.getTitle()
+        vars["url"] = modSixPay.getUrl()
+        vars["shopid"] = modSixPay.getShopID()
+        vars["mastershopid"] = modSixPay.getMasterShopID()
+        vars["hashseed"] = modSixPay.getHashSeed()
         return vars
 
 
-class WPConfModifEPaymentYellowPayDataModif(WPConfModifEPaymentYellowPayBase):
+class WPConfModifEPaymentSixPayDataModif(WPConfModifEPaymentSixPayBase):
     def _getTabContent(self, params):
-        wc = WConfModifEPaymentYellowPayDataModif(self._conf)
-        p = {'postURL': quoteattr(str(localUrlHandlers.UHConfModifEPaymentYellowPayPerformDataModif.getURL(self._conf)))
+        wc = WConfModifEPaymentSixPayDataModif(self._conf)
+        p = {'postURL': quoteattr(str(localUrlHandlers.UHConfModifEPaymentSixPayPerformDataModif.getURL(self._conf)))
              }
         return wc.getHTML(p)
 
 
-class WConfModifEPaymentYellowPayDataModif(WTemplated):
+class WConfModifEPaymentSixPayDataModif(WTemplated):
     def __init__(self, conference):
         self._conf = conference
 
     def getVars(self):
         vars = WTemplated.getVars(self)
-        modYellowPay = self._conf.getModPay().getPayModByTag(MODULE_ID)
-        vars["title"] = modYellowPay.getTitle()
-        vars["url"] = modYellowPay.getUrl()
-        vars["shopid"] = modYellowPay.getShopID()
-        vars["mastershopid"] = modYellowPay.getMasterShopID()
-        vars["hashseed"] = modYellowPay.getHashSeed()
+        modSixPay = self._conf.getModPay().getPayModByTag(MODULE_ID)
+        vars["title"] = modSixPay.getTitle()
+        vars["url"] = modSixPay.getUrl()
+        vars["shopid"] = modSixPay.getShopID()
+        vars["mastershopid"] = modSixPay.getMasterShopID()
+        vars["hashseed"] = modSixPay.getHashSeed()
         return vars
 
 
-class WPconfirmEPaymentYellowPay(conferences.WPConferenceDefaultDisplayBase):
+class WPconfirmEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
     # navigationEntry = navigation.NERegistrationFormDisplay
 
     def __init__(self, rh, conf, reg):
@@ -116,7 +116,7 @@ class WPconfirmEPaymentYellowPay(conferences.WPConferenceDefaultDisplayBase):
         self._registrant = reg
 
     def _getBody(self, params):
-        wc = WconfirmEPaymentYellowPay(self._conf, self._registrant)
+        wc = WconfirmEPaymentSixPay(self._conf, self._registrant)
         return wc.getHTML()
 
     def _defineSectionMenu(self):
@@ -124,19 +124,19 @@ class WPconfirmEPaymentYellowPay(conferences.WPConferenceDefaultDisplayBase):
         self._sectionMenu.setCurrentItem(self._regFormOpt)
 
 
-class WconfirmEPaymentYellowPay(WTemplated):
+class WconfirmEPaymentSixPay(WTemplated):
     def __init__(self, configuration, registrant):
         self._registrant = registrant
         self._conf = configuration
 
     def getVars(self):
         vars = WTemplated.getVars(self)
-        vars["message"] = "Thank you, your payment has been accepted by Yellowpay"
+        vars["message"] = "Thank you, your payment has been accepted by SixPay"
         vars["trinfo"] = "%s:%s" % (self._registrant.getFirstName(), self._registrant.getSurName())
         return vars
 
 
-class WPCancelEPaymentYellowPay(conferences.WPConferenceDefaultDisplayBase):
+class WPCancelEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
     # navigationEntry = navigation.NERegistrationFormDisplay
 
     def __init__(self, rh, conf, reg):
@@ -144,7 +144,7 @@ class WPCancelEPaymentYellowPay(conferences.WPConferenceDefaultDisplayBase):
         self._registrant = reg
 
     def _getBody(self, params):
-        wc = WCancelEPaymentYellowPay(self._conf, self._registrant)
+        wc = WCancelEPaymentSixPay(self._conf, self._registrant)
         return wc.getHTML()
 
     def _defineSectionMenu(self):
@@ -152,19 +152,19 @@ class WPCancelEPaymentYellowPay(conferences.WPConferenceDefaultDisplayBase):
         self._sectionMenu.setCurrentItem(self._regFormOpt)
 
 
-class WCancelEPaymentYellowPay(WTemplated):
+class WCancelEPaymentSixPay(WTemplated):
     def __init__(self, conference, reg):
         self._conf = conference
         self._registrant = reg
 
     def getVars(self):
         vars = WTemplated.getVars(self)
-        vars["message"] = "The payment was cancelled (using YellowPay)"
+        vars["message"] = "The payment was cancelled (using SixPay)"
         vars["messagedetailPayment"] = "%s:%s" % (self._registrant.getFirstName(), self._registrant.getSurName())
         return vars
 
 
-class WPNotconfirmEPaymentYellowPay(conferences.WPConferenceDefaultDisplayBase):
+class WPNotconfirmEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
     # navigationEntry = navigation.NERegistrationFormDisplay
 
     def __init__(self, rh, conf, reg):
@@ -172,7 +172,7 @@ class WPNotconfirmEPaymentYellowPay(conferences.WPConferenceDefaultDisplayBase):
         self._registrant = reg
 
     def _getBody(self, params):
-        wc = WNotconfirmEPaymentYellowPay(self._conf, self._registrant)
+        wc = WNotconfirmEPaymentSixPay(self._conf, self._registrant)
         return wc.getHTML()
 
     def _defineSectionMenu(self):
@@ -180,13 +180,13 @@ class WPNotconfirmEPaymentYellowPay(conferences.WPConferenceDefaultDisplayBase):
         self._sectionMenu.setCurrentItem(self._regFormOpt)
 
 
-class WNotconfirmEPaymentYellowPay(WTemplated):
+class WNotconfirmEPaymentSixPay(WTemplated):
     def __init__(self, conference, reg):
         self._conf = conference
         self._registrant = reg
 
     def getVars(self):
         vars = WTemplated.getVars(self)
-        vars["message"] = "You have not confirmed!\n (using YellowPay)"
+        vars["message"] = "You have not confirmed!\n (using SixPay)"
         vars["messagedetailPayment"] = "%s:%s" % (self._registrant.getFirstName(), self._registrant.getSurName())
         return vars

@@ -29,24 +29,24 @@ from ... import epayment as ePayment
 from ... import MODULE_ID
 
 
-class RHEPaymentmodifYellowPay(RHEPaymentModifBase):
-    _requestTag = "modifYellowPay"
+class RHEPaymentmodifSixPay(RHEPaymentModifBase):
+    _requestTag = "modifSixPay"
 
     def _process(self):
-        p = ePayments.WPConfModifEPaymentYellowPay( self, self._conf )
+        p = ePayments.WPConfModifEPaymentSixPay( self, self._conf )
         return p.display()
 
 
-class RHEPaymentmodifYellowPayDataModif(RHEPaymentModifBase):
-    _requestTag = "modifYellowPayData"
+class RHEPaymentmodifSixPayDataModif(RHEPaymentModifBase):
+    _requestTag = "modifSixPayData"
 
     def _process(self):
-        p = ePayments.WPConfModifEPaymentYellowPayDataModif(self, self._conf)
+        p = ePayments.WPConfModifEPaymentSixPayDataModif(self, self._conf)
         return p.display()
 
 
-class RHEPaymentmodifYellowPayPerformDataModif(RHEPaymentModifBase):
-    _requestTag = "modifYellowPayPerformDataModif"
+class RHEPaymentmodifSixPayPerformDataModif(RHEPaymentModifBase):
+    _requestTag = "modifSixPayPerformDataModif"
 
     def _checkParams( self, params ):
         RHEPaymentModifBase._checkParams( self, params )
@@ -56,10 +56,10 @@ class RHEPaymentmodifYellowPayPerformDataModif(RHEPaymentModifBase):
         if not self._cancel:
             ses = self._conf.getModPay().getPayModByTag(MODULE_ID)
             ses.setValues(self._getRequestParams())
-        self._redirect(localUrlHandlers.UHConfModifEPaymentYellowPay.getURL(self._conf))
+        self._redirect(localUrlHandlers.UHConfModifEPaymentSixPay.getURL(self._conf))
 
 
-class RHEPaymentconfirmYellowPay(RHRegistrationFormDisplayBase):
+class RHEPaymentconfirmSixPay(RHRegistrationFormDisplayBase):
     _requestTag = "effectuer"
 
     def _checkParams(self, params):
@@ -71,11 +71,11 @@ class RHEPaymentconfirmYellowPay(RHRegistrationFormDisplayBase):
 
     def _processIfActive(self):
         if self._registrant is not None:
-            p = ePayments.WPconfirmEPaymentYellowPay(self, self._conf, self._registrant)
+            p = ePayments.WPconfirmEPaymentSixPay(self, self._conf, self._registrant)
             return p.display()
 
 
-class RHEPaymentCancelYellowPay(RHRegistrationFormDisplayBase):
+class RHEPaymentCancelSixPay(RHRegistrationFormDisplayBase):
     _requestTag = "annuler"
 
     def _checkParams(self, params):
@@ -87,11 +87,11 @@ class RHEPaymentCancelYellowPay(RHRegistrationFormDisplayBase):
 
     def _processIfActive( self ):
         if self._registrant is not None:
-            p = ePayments.WPCancelEPaymentYellowPay( self,self._conf ,self._registrant)
+            p = ePayments.WPCancelEPaymentSixPay( self,self._conf ,self._registrant)
             return p.display()
 
 
-class RHEPaymentNotConfirmeYellowPay(RHRegistrationFormDisplayBase):
+class RHEPaymentNotConfirmeSixPay(RHRegistrationFormDisplayBase):
     _requestTag = "noneffectuer"
 
     def _checkParams(self, params):
@@ -103,11 +103,11 @@ class RHEPaymentNotConfirmeYellowPay(RHRegistrationFormDisplayBase):
 
     def _processIfActive(self):
         if self._registrant is not None:
-            p = ePayments.WPNotconfirmEPaymentYellowPay(self, self._conf, self._registrant)
+            p = ePayments.WPNotconfirmEPaymentSixPay(self, self._conf, self._registrant)
             return p.display()
 
 
-class RHEPaymentValideParamYellowPay(RHConferenceBaseDisplay):
+class RHEPaymentValideParamSixPay(RHConferenceBaseDisplay):
     _requestTag = "params"
 
     def _checkProtection(self):
@@ -142,6 +142,6 @@ class RHEPaymentValideParamYellowPay(RHConferenceBaseDisplay):
                     "ESR_Member": self._params.get("txtESR_Member"),
                     "ESR_Ref": self._params.get("txtESR_Ref"),
                 }
-                trYellowpay=ePayment.TransactionYellowPay(d)
-                self._registrant.setTransactionInfo(trYellowpay)
+                trSixPay=ePayment.TransactionSixPay(d)
+                self._registrant.setTransactionInfo(trSixPay)
                 self._regForm.getNotification().sendEmailNewRegistrantConfirmPay(self._regForm, self._registrant)

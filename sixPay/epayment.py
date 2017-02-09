@@ -114,10 +114,10 @@ class SixPayMod(BaseEPayMod):
         return s
 
     def getConfModifEPaymentURL(self, conf):
-        return localUrlHandlers.UHConfModifEPaymentYellowPay.getURL(conf)
+        return localUrlHandlers.UHConfModifEPaymentSixPay.getURL(conf)
 
 
-class TransactionYellowPay(BaseTransaction):
+class TransactionSixPay(BaseTransaction):
     """Transaction for SIX Payment Service"""
     def __init__(self, parms):
         BaseTransaction.__init__(self)
@@ -127,7 +127,7 @@ class TransactionYellowPay(BaseTransaction):
         try:
             return self._id
         except AttributeError:
-            self._id = "yellowpay"
+            self._id = "sixpay"
             return self._id
 
     def getTransactionHTML(self):
@@ -145,7 +145,7 @@ class TransactionYellowPay(BaseTransaction):
                         <table>
                           <tr>
                             <td align="right"><b>Payment with:</b></td>
-                            <td align="left">YellowPay</td>
+                            <td align="left">SixPay</td>
                           </tr>
                           <tr>
                             <td align="right"><b>Payment Date:</b></td>
@@ -179,7 +179,7 @@ class TransactionYellowPay(BaseTransaction):
 \tESR Ref:%s\n
 """ % (self._Data["ESR_Member"], self._Data["ESR_Ref"])
         return """
-\tPayment with:YellowPay\n
+\tPayment with:SixPay\n
 \tPayment Date:%s\n
 \tTransactionID:%s\n
 \tOrder Total:%s %s\n

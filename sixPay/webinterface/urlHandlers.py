@@ -34,33 +34,33 @@ class UHConfModifEPayment(EPURLHandler):
     _endpoint = 'event_mgmt.confModifEpayment-modifModule'
 
 
-class UHConfModifEPaymentYellowPay(UHConfModifEPayment):
-    _requestTag = "modifYellowPay"
+class UHConfModifEPaymentSixPay(UHConfModifEPayment):
+    _requestTag = "modifSixPay"
 
 
-class UHConfModifEPaymentYellowPayDataModif(UHConfModifEPayment):
-    _requestTag = "modifYellowPayData"
+class UHConfModifEPaymentSixPayDataModif(UHConfModifEPayment):
+    _requestTag = "modifSixPayData"
 
 
-class UHConfModifEPaymentYellowPayPerformDataModif(UHConfModifEPayment):
-    _requestTag = "modifYellowPayPerformDataModif"
+class UHConfModifEPaymentSixPayPerformDataModif(UHConfModifEPayment):
+    _requestTag = "modifSixPayPerformDataModif"
 
 
 class UHPay(EPURLHandler):
     _endpoint = 'misc.payment'
 
 
-class UHPayConfirmYellowPay(UHPay):
+class UHPayConfirmSixPay(UHPay):
     _requestTag = "effectuer"
 
 
-class UHPayNotconfirmYellowPay(UHPay):
+class UHPayNotconfirmSixPay(UHPay):
     _requestTag = "noneffectuer"
 
 
-class UHPayCancelYellowPay(UHPay):
+class UHPayCancelSixPay(UHPay):
     _requestTag = "annuler"
 
 
-class UHPayParamsYellowPay(UHPay):
+class UHPayParamsSixPay(UHPay):
     _requestTag = "params"

@@ -9,7 +9,7 @@
         </form>
     </tr>
     <tr>
-        <td class="dataCaptionTD"><span class="dataCaptionFormat">URL of yellowpay</span></td>
+        <td class="dataCaptionTD"><span class="dataCaptionFormat">URL of sixPay</span></td>
         <td bgcolor="white" width="100%" class="blacktext"><pre>${ url }</pre></td>
     </tr>
     <tr>
