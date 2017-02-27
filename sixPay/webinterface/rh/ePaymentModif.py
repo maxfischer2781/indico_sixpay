@@ -33,7 +33,7 @@ class RHEPaymentmodifSixPay(RHEPaymentModifBase):
     _requestTag = "modifSixPay"
 
     def _process(self):
-        p = ePayments.WPConfModifEPaymentSixPay( self, self._conf )
+        p = ePayments.WPConfModifEPaymentSixPay(self, self._conf)
         return p.display()
 
 
@@ -48,8 +48,8 @@ class RHEPaymentmodifSixPayDataModif(RHEPaymentModifBase):
 class RHEPaymentmodifSixPayPerformDataModif(RHEPaymentModifBase):
     _requestTag = "modifSixPayPerformDataModif"
 
-    def _checkParams( self, params ):
-        RHEPaymentModifBase._checkParams( self, params )
+    def _checkParams(self, params):
+        RHEPaymentModifBase._checkParams(self, params)
         self._cancel = params.has_key("cancel")
 
     def _process(self):
@@ -80,14 +80,14 @@ class RHEPaymentCancelSixPay(RHRegistrationFormDisplayBase):
 
     def _checkParams(self, params):
         RHRegistrationFormDisplayBase._checkParams(self, params)
-        self._registrant=None
+        self._registrant = None
         regId = params.get("registrantId", "")
         if regId is not None:
             self._registrant = self._conf.getRegistrantById(regId)
 
-    def _processIfActive( self ):
+    def _processIfActive(self):
         if self._registrant is not None:
-            p = ePayments.WPCancelEPaymentSixPay( self,self._conf ,self._registrant)
+            p = ePayments.WPCancelEPaymentSixPay(self, self._conf, self._registrant)
             return p.display()
 
 
@@ -97,7 +97,7 @@ class RHEPaymentNotConfirmeSixPay(RHRegistrationFormDisplayBase):
     def _checkParams(self, params):
         RHRegistrationFormDisplayBase._checkParams(self, params)
         self._registrant = None
-        regId=params.get("registrantId", "")
+        regId = params.get("registrantId", "")
         if regId is not None:
             self._registrant = self._conf.getRegistrantById(regId)
 
@@ -142,6 +142,6 @@ class RHEPaymentValideParamSixPay(RHConferenceBaseDisplay):
                     "ESR_Member": self._params.get("txtESR_Member"),
                     "ESR_Ref": self._params.get("txtESR_Ref"),
                 }
-                trSixPay=ePayment.TransactionSixPay(d)
+                trSixPay = ePayment.TransactionSixPay(d)
                 self._registrant.setTransactionInfo(trSixPay)
                 self._regForm.getNotification().sendEmailNewRegistrantConfirmPay(self._regForm, self._registrant)
