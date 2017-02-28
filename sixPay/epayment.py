@@ -22,16 +22,18 @@ from MaKaC.webinterface import urlHandlers
 
 
 from .webinterface import urlHandlers as localUrlHandlers
-from . import MODULE_ID
+from . import MODULE_ID, six_logger
 import md5
 
 
 class SixPayMod(BaseEPayMod):
     """Payment Module for SIX Payment Service"""
     def __init__(self, data=None):
+        six_logger.info('%s', data)
         BaseEPayMod.__init__(self)
         self._title = "SixPay"
-        self._url = "https://yellowpay.postfinance.ch/checkout/Yellowpay.aspx?userctrl=Invisible"
+        # self._url = "https://yellowpay.postfinance.ch/checkout/Yellowpay.aspx?userctrl=Invisible"
+        self._url = "https://www.saferpay.com/hosting"
         self._shopID = ""
         self._masterShopID = ""
         self._hashSeed = ""
@@ -83,6 +85,7 @@ class SixPayMod(BaseEPayMod):
         self._hashSeed = hashSeed
 
     def getFormHTML(self, prix, Currency, conf, registrant, lang="en_GB", secure=False):
+        six_logger.info('%s', (prix, Currency, conf, registrant, "en_GB", False))
         l=[]
         l.append("%s=%s"%("confId",conf.getId()))
         l.append("%s=%s"%("registrantId",registrant.getId()))
@@ -114,12 +117,14 @@ class SixPayMod(BaseEPayMod):
         return s
 
     def getConfModifEPaymentURL(self, conf):
+        six_logger.info('%s', conf)
         return localUrlHandlers.UHConfModifEPaymentSixPay.getURL(conf)
 
 
 class TransactionSixPay(BaseTransaction):
     """Transaction for SIX Payment Service"""
     def __init__(self, parms):
+        six_logger.info('%s', parms)
         BaseTransaction.__init__(self)
         self._Data = parms
 

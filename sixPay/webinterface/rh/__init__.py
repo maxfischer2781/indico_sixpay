@@ -16,6 +16,9 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
+from __future__ import print_function, absolute_import
+
+from ... import six_logger
 
 modules = {}
 
@@ -23,6 +26,7 @@ modules = {}
 
 def getRHByTag(self, tag):
     """Do the link between url handlers and request handlers"""
+    six_logger.info('%s', (self, tag))
     for mod in self.modules.values():
         for RH in mod.__dict__.keys():
             try:

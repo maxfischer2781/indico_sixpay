@@ -25,3 +25,13 @@ __metadata__ = {
 MODULE_ID = 'SixPay'
 
 modules = {}
+
+import logging
+six_logger = logging.getLogger('sixpay')
+six_logger.propagate = False
+_handler = logging.FileHandler('/tmp/sixpay.log')
+_handler.setFormatter(logging.Formatter(fmt='#>>> %(asctime)s %(pathname)s::%(lineno)d[%(funcName)s]\n%(message)s'))
+six_logger.addHandler(_handler)
+six_logger.setLevel(10)
+
+six_logger.info('%s', 'loaded')

@@ -26,13 +26,14 @@ from MaKaC.common.timezoneUtils import nowutc
 from ..pages import ePayments
 from .. import urlHandlers as localUrlHandlers
 from ... import epayment as ePayment
-from ... import MODULE_ID
+from ... import MODULE_ID, six_logger
 
 
 class RHEPaymentmodifSixPay(RHEPaymentModifBase):
     _requestTag = "modifSixPay"
 
     def _process(self):
+        six_logger.info('%s', None)
         p = ePayments.WPConfModifEPaymentSixPay(self, self._conf)
         return p.display()
 
@@ -41,6 +42,7 @@ class RHEPaymentmodifSixPayDataModif(RHEPaymentModifBase):
     _requestTag = "modifSixPayData"
 
     def _process(self):
+        six_logger.info('%s', None)
         p = ePayments.WPConfModifEPaymentSixPayDataModif(self, self._conf)
         return p.display()
 
@@ -49,6 +51,7 @@ class RHEPaymentmodifSixPayPerformDataModif(RHEPaymentModifBase):
     _requestTag = "modifSixPayPerformDataModif"
 
     def _checkParams(self, params):
+        six_logger.info('%s', params)
         RHEPaymentModifBase._checkParams(self, params)
         self._cancel = params.has_key("cancel")
 
@@ -63,6 +66,7 @@ class RHEPaymentconfirmSixPay(RHRegistrationFormDisplayBase):
     _requestTag = "effectuer"
 
     def _checkParams(self, params):
+        six_logger.info('%s', params)
         RHRegistrationFormDisplayBase._checkParams(self, params)
         self._registrant = None
         regId = params.get("registrantId", "")
@@ -70,6 +74,7 @@ class RHEPaymentconfirmSixPay(RHRegistrationFormDisplayBase):
             self._registrant = self._conf.getRegistrantById(regId)
 
     def _processIfActive(self):
+        six_logger.info('%s', None)
         if self._registrant is not None:
             p = ePayments.WPconfirmEPaymentSixPay(self, self._conf, self._registrant)
             return p.display()
@@ -79,6 +84,7 @@ class RHEPaymentCancelSixPay(RHRegistrationFormDisplayBase):
     _requestTag = "annuler"
 
     def _checkParams(self, params):
+        six_logger.info('%s', params)
         RHRegistrationFormDisplayBase._checkParams(self, params)
         self._registrant = None
         regId = params.get("registrantId", "")
@@ -86,6 +92,7 @@ class RHEPaymentCancelSixPay(RHRegistrationFormDisplayBase):
             self._registrant = self._conf.getRegistrantById(regId)
 
     def _processIfActive(self):
+        six_logger.info('%s', None)
         if self._registrant is not None:
             p = ePayments.WPCancelEPaymentSixPay(self, self._conf, self._registrant)
             return p.display()
@@ -95,6 +102,7 @@ class RHEPaymentNotConfirmeSixPay(RHRegistrationFormDisplayBase):
     _requestTag = "noneffectuer"
 
     def _checkParams(self, params):
+        six_logger.info('%s', params)
         RHRegistrationFormDisplayBase._checkParams(self, params)
         self._registrant = None
         regId = params.get("registrantId", "")
@@ -102,6 +110,7 @@ class RHEPaymentNotConfirmeSixPay(RHRegistrationFormDisplayBase):
             self._registrant = self._conf.getRegistrantById(regId)
 
     def _processIfActive(self):
+        six_logger.info('%s', None)
         if self._registrant is not None:
             p = ePayments.WPNotconfirmEPaymentSixPay(self, self._conf, self._registrant)
             return p.display()
@@ -111,11 +120,13 @@ class RHEPaymentValideParamSixPay(RHConferenceBaseDisplay):
     _requestTag = "params"
 
     def _checkProtection(self):
+        six_logger.info('%s', None)
         # Just bypass everything else, as we want the payment service
         # to acknowledge the payment
         pass
 
     def _checkParams(self, params):
+        six_logger.info('%s', params)
         RHConferenceBaseDisplay._checkParams(self, params)
         self._regForm = self._conf.getRegistrationForm()
         self._params = params
@@ -125,6 +136,7 @@ class RHEPaymentValideParamSixPay(RHConferenceBaseDisplay):
             self._registrant = self._conf.getRegistrantById(regId)
 
     def _process(self):
+        six_logger.info('%s', None)
         regForm = self._conf.getRegistrationForm()
         if not regForm.isActivated() or not self._conf.hasEnabledSection("regForm"):
             p = regForm.WPRegFormInactive(self, self._conf)

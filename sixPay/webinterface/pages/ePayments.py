@@ -27,11 +27,12 @@ import MaKaC
 
 from ..wcomponents import WTemplated
 from .. import urlHandlers as localUrlHandlers
-from ... import MODULE_ID
+from ... import MODULE_ID, six_logger
 
 
 class WPConfModifEPaymentSixPayBase(registrationForm.WPConfModifRegFormBase):
     def _createTabCtrl(self):
+        six_logger.info('%s', None)
         self._tabCtrl = wcomponents.TabControl()
         self._tabMain = self._tabCtrl.newTab(
             "main",
@@ -62,6 +63,7 @@ class WPConfModifEPaymentSixPayBase(registrationForm.WPConfModifRegFormBase):
 
 class WPConfModifEPaymentSixPay(WPConfModifEPaymentSixPayBase):
     def _getTabContent(self, params):
+        six_logger.info('%s', params)
         wc = WConfModifEPaymentSixPay(self._conf)
         p = {
             'dataModificationURL': quoteattr(
@@ -72,10 +74,12 @@ class WPConfModifEPaymentSixPay(WPConfModifEPaymentSixPayBase):
 
 class WConfModifEPaymentSixPay(WTemplated):
     def __init__(self, conference):
+        six_logger.info('%s', conference)
         self._conf = conference
 
     def getVars(self):
         vars = WTemplated.getVars(self)
+        six_logger.info('%s', vars)
         modSixPay = self._conf.getModPay().getPayModByTag(MODULE_ID)
         vars["title"] = modSixPay.getTitle()
         vars["url"] = modSixPay.getUrl()
@@ -87,6 +91,7 @@ class WConfModifEPaymentSixPay(WTemplated):
 
 class WPConfModifEPaymentSixPayDataModif(WPConfModifEPaymentSixPayBase):
     def _getTabContent(self, params):
+        six_logger.info('%s', params)
         wc = WConfModifEPaymentSixPayDataModif(self._conf)
         p = {'postURL': quoteattr(str(localUrlHandlers.UHConfModifEPaymentSixPayPerformDataModif.getURL(self._conf)))
              }
@@ -95,10 +100,12 @@ class WPConfModifEPaymentSixPayDataModif(WPConfModifEPaymentSixPayBase):
 
 class WConfModifEPaymentSixPayDataModif(WTemplated):
     def __init__(self, conference):
+        six_logger.info('%s', conference)
         self._conf = conference
 
     def getVars(self):
         vars = WTemplated.getVars(self)
+        six_logger.info('%s', vars)
         modSixPay = self._conf.getModPay().getPayModByTag(MODULE_ID)
         vars["title"] = modSixPay.getTitle()
         vars["url"] = modSixPay.getUrl()
@@ -112,25 +119,30 @@ class WPconfirmEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
     # navigationEntry = navigation.NERegistrationFormDisplay
 
     def __init__(self, rh, conf, reg):
+        six_logger.info('%s', (rh, conf, reg))
         conferences.WPConferenceDefaultDisplayBase.__init__(self, rh, conf)
         self._registrant = reg
 
     def _getBody(self, params):
+        six_logger.info('%s', params)
         wc = WconfirmEPaymentSixPay(self._conf, self._registrant)
         return wc.getHTML()
 
     def _defineSectionMenu(self):
+        six_logger.info('%s', None)
         conferences.WPConferenceDefaultDisplayBase._defineSectionMenu(self)
         self._sectionMenu.setCurrentItem(self._regFormOpt)
 
 
 class WconfirmEPaymentSixPay(WTemplated):
     def __init__(self, configuration, registrant):
+        six_logger.info('%s', (configuration, registrant))
         self._registrant = registrant
         self._conf = configuration
 
     def getVars(self):
         vars = WTemplated.getVars(self)
+        six_logger.info('%s', vars)
         vars["message"] = "Thank you, your payment has been accepted by SixPay"
         vars["trinfo"] = "%s:%s" % (self._registrant.getFirstName(), self._registrant.getSurName())
         return vars
@@ -140,10 +152,12 @@ class WPCancelEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
     # navigationEntry = navigation.NERegistrationFormDisplay
 
     def __init__(self, rh, conf, reg):
+        six_logger.info('%s', (rh, conf, reg))
         conferences.WPConferenceDefaultDisplayBase.__init__(self, rh, conf)
         self._registrant = reg
 
     def _getBody(self, params):
+        six_logger.info('%s', params)
         wc = WCancelEPaymentSixPay(self._conf, self._registrant)
         return wc.getHTML()
 
@@ -159,6 +173,7 @@ class WCancelEPaymentSixPay(WTemplated):
 
     def getVars(self):
         vars = WTemplated.getVars(self)
+        six_logger.info('%s', vars)
         vars["message"] = "The payment was cancelled (using SixPay)"
         vars["messagedetailPayment"] = "%s:%s" % (self._registrant.getFirstName(), self._registrant.getSurName())
         return vars
@@ -168,10 +183,12 @@ class WPNotconfirmEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
     # navigationEntry = navigation.NERegistrationFormDisplay
 
     def __init__(self, rh, conf, reg):
+        six_logger.info('%s', (rh, conf, reg))
         conferences.WPConferenceDefaultDisplayBase.__init__(self, rh, conf)
         self._registrant = reg
 
     def _getBody(self, params):
+        six_logger.info('%s', params)
         wc = WNotconfirmEPaymentSixPay(self._conf, self._registrant)
         return wc.getHTML()
 
@@ -182,11 +199,13 @@ class WPNotconfirmEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
 
 class WNotconfirmEPaymentSixPay(WTemplated):
     def __init__(self, conference, reg):
+        six_logger.info('%s', (conference, reg))
         self._conf = conference
         self._registrant = reg
 
     def getVars(self):
         vars = WTemplated.getVars(self)
+        six_logger.info('%s', vars)
         vars["message"] = "You have not confirmed!\n (using SixPay)"
         vars["messagedetailPayment"] = "%s:%s" % (self._registrant.getFirstName(), self._registrant.getSurName())
         return vars
