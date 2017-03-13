@@ -33,7 +33,7 @@ import sixPay as pay_plugin
 class WTemplated(wcomponents.WTemplated):
     # Editor's Note  - MF@20170309
     # If you are wondering how tplId is set:
-    #   WTemplated sets it an arbitrary time after __init__ in getHTML (!!!) to
+    #   WTemplated sets it at an arbitrary time after __init__ in getHTML (!!!) to
     # self.tplId = self.__class__.__name__[1:]
     def _setTPLFile(self):
         """

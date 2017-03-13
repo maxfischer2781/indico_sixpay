@@ -79,20 +79,3 @@ class UHPayTransactionBacklink(UHPay):
 class UHPayTransactionNotifyUrl(UHPay):
     # endpoint for SixPay to confirm transaction WITHOUT user intervention
     _requestTag = "notifyurl"
-
-
-# TODO: remove old stuff
-class UHPayConfirmSixPay(UHPay):
-    _requestTag = "effectuer"
-
-
-class UHPayNotconfirmSixPay(UHPay):
-    _requestTag = "noneffectuer"
-
-
-class UHPayCancelSixPay(UHPay):
-    _requestTag = "annuler"
-
-
-class UHPayParamsSixPay(UHPay):
-    _requestTag = "params"
