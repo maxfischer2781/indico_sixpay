@@ -9,5 +9,6 @@ setup(
     entry_points={'indico.ext': ['EPayment.sixPay = sixPay', ], },
     packages=find_packages(),
     package_data={'sixPay': ['tpls/*.tpl']},
+    install_requires=['requests', 'indico>=1.2'],
     zip_safe=False,  # TODO: DEBUG only
 )
