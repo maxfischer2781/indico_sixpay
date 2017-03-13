@@ -26,7 +26,7 @@ from MaKaC.common.timezoneUtils import nowutc
 from ..pages import ePayments
 from .. import urlHandlers as localUrlHandlers
 from ... import epayment as ePayment
-from ... import MODULE_ID, six_logger
+from ... import MODULE_ID
 
 
 # Editor's Note  - MF@20170309
@@ -40,7 +40,6 @@ class RHEPaymentmodifSixPay(RHEPaymentModifBase):
     _requestTag = "modifSixPay"
 
     def _process(self):
-        six_logger.info('%s', 'no parameters')
         p = ePayments.WPConfModifEPaymentSixPay(self, self._conf)
         return p.display()
 
@@ -49,7 +48,6 @@ class RHEPaymentmodifSixPayDataModif(RHEPaymentModifBase):
     _requestTag = "modifSixPayData"
 
     def _process(self):
-        six_logger.info('%s', None)
         p = ePayments.WPConfModifEPaymentSixPayDataModif(self, self._conf)
         return p.display()
 
@@ -58,7 +56,6 @@ class RHEPaymentmodifSixPayPerformDataModif(RHEPaymentModifBase):
     _requestTag = "modifSixPayPerformDataModif"
 
     def _checkParams(self, params):
-        six_logger.info('%s', params)
         RHEPaymentModifBase._checkParams(self, params)
         self._cancel = params.has_key("cancel")
 
@@ -66,7 +63,6 @@ class RHEPaymentmodifSixPayPerformDataModif(RHEPaymentModifBase):
         if not self._cancel:
             conference_six_epayment = self._conf.getModPay().getPayModByTag(MODULE_ID)
             data = self._getRequestParams()
-            six_logger.info('%s', data)
             conference_six_epayment.setValues(data)
         self._redirect(localUrlHandlers.UHConfModifEPaymentSixPay.getURL(self._conf))
 
@@ -82,7 +78,6 @@ class RHTransactionUserCallback(RHRegistrationFormDisplayBase):
     message_detail = None
 
     def _checkParams(self, params):
-        six_logger.info('%s', params)
         RHRegistrationFormDisplayBase._checkParams(self, params)
         self._registrant = None
         regId = params.get("registrantId", "")
@@ -90,7 +85,6 @@ class RHTransactionUserCallback(RHRegistrationFormDisplayBase):
             self._registrant = self._conf.getRegistrantById(regId)
 
     def _processIfActive(self):
-        six_logger.info('%s', 'no parameters')
         if self._registrant is not None:
             assert self.display_page is not None, "Callbacks must set display pages for users"
             display_page = self.display_page(self, self._conf, self._registrant)
@@ -98,7 +92,6 @@ class RHTransactionUserCallback(RHRegistrationFormDisplayBase):
                 display_page.message = self.message
             if self.message_detail is not None:
                 display_page.message_detail = self.message_detail
-            six_logger.info('%s %s %s', self, display_page, self._registrant)
             return display_page.display()
 
 
@@ -108,7 +101,6 @@ class RHTransactionSuccesslink(RHTransactionUserCallback):
     display_page = ePayments.WPTransactionSuccesslink
 
     def _checkParams(self, params):
-        six_logger.info('%s', params)
         # indico tries to evaluate the DATA xml as an HTML locator if we do not remove it
         data = params.pop('DATA')
         RHTransactionUserCallback._checkParams(self, params)

@@ -26,7 +26,7 @@ from MaKaC.common.timezoneUtils import nowutc
 
 
 from .webinterface import urlHandlers as localUrlHandlers
-from . import MODULE_ID, six_logger
+from . import MODULE_ID
 
 
 class TransactionError(BaseException):
@@ -50,7 +50,6 @@ class SixPayMod(BaseEPayMod):
     }
 
     def __init__(self, data=None):
-        six_logger.info('%s', data)
         BaseEPayMod.__init__(self)
         #: title of this payment method
         self._title = self.default_settings['title']
@@ -84,11 +83,9 @@ class SixPayMod(BaseEPayMod):
 
         :note: any field missing in `data` will be set to its default value
         """
-        six_logger.info('%s', data)
         for key in self.default_settings:
             value = data.get(key) or self.default_settings[key]
             setattr(self, key, value)
-        six_logger.info('%s', self.getValues())
 
     def getValues(self):
         """
@@ -125,7 +122,6 @@ class SixPayMod(BaseEPayMod):
     @staticmethod
     def _perform_request(endpoint, **params):
         """Perform a POST request"""
-        six_logger.info('POST %s %s', endpoint, params)
         url_request = requests.post(endpoint, **params)
         # raise any request errors
         url_request.raise_for_status()
@@ -136,7 +132,6 @@ class SixPayMod(BaseEPayMod):
 
     def getFormHTML(self, prix, Currency, conf, registrant, lang="en_GB", secure=False):
         """Generates the action of the button presented to the user for payment"""
-        six_logger.info('%s', (prix, Currency, conf, registrant, "en_GB", secure))
         payment_url = self._get_payment_url(prix, Currency, conf, registrant, lang, secure)
         payment_action = """<form action="%s" method="POST" id="%s"/>""" % (payment_url, self.getId())
         return payment_action
@@ -229,7 +224,6 @@ class SixPayMod(BaseEPayMod):
         if url_request.text.startswith('OK:'):
             # text = 'OK:ID=56a77rg243asfhmkq3r&TOKEN=%3e235462FA23C4FE4AF65'
             confirmation = dict(key_value.split('=') for key_value in url_request.text.split(':', 1)[1].split('&'))
-            six_logger.info('%s %s', confirmation, data)
             if idp_data['ID'] != confirmation['ID'] or idp_data['ID'] != confirmation['ID']:
                 raise TransactionError('Mismatched verification and confirmation data')
             return True

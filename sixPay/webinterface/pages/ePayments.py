@@ -27,7 +27,7 @@ import MaKaC
 
 from ..wcomponents import WTemplated
 from .. import urlHandlers as localUrlHandlers
-from ... import MODULE_ID, six_logger
+from ... import MODULE_ID
 
 
 # Editor's Note  - MF@20170309
@@ -40,7 +40,6 @@ from ... import MODULE_ID, six_logger
 
 class WPConfModifEPaymentSixPayBase(registrationForm.WPConfModifRegFormBase):
     def _createTabCtrl(self):
-        six_logger.info('%s', 'no parameters')
         self._tabCtrl = wcomponents.TabControl()
         self._tabMain = self._tabCtrl.newTab(
             "main",
@@ -71,7 +70,6 @@ class WPConfModifEPaymentSixPayBase(registrationForm.WPConfModifRegFormBase):
 
 class WPConfModifEPaymentSixPay(WPConfModifEPaymentSixPayBase):
     def _getTabContent(self, params):
-        six_logger.info('%s', params)
         wc = WConfModifEPaymentSixPay(self._conf)
         p = {
             'dataModificationURL': quoteattr(
@@ -80,7 +78,6 @@ class WPConfModifEPaymentSixPay(WPConfModifEPaymentSixPayBase):
         return wc.getHTML(p)
 
     def display(self, **params):
-        six_logger.info('%s', params)
         result = WPConfModifEPaymentSixPayBase.display(self, **params)
         return result
 
@@ -88,7 +85,6 @@ class WPConfModifEPaymentSixPay(WPConfModifEPaymentSixPayBase):
 class WConfModifEPaymentSixPay(WTemplated):
     def __init__(self, conference):
         WTemplated.__init__(self)
-        six_logger.info('%s', conference)
         self._conf = conference
 
     def getVars(self):
@@ -97,17 +93,14 @@ class WConfModifEPaymentSixPay(WTemplated):
 
         Displayed via `tpls/ConfModifEPaymentSixPay.tpl`.
         """
-        six_logger.info('%s %s', self, 'no parameters')
         _vars = WTemplated.getVars(self)
         modSixPay = self._conf.getModPay().getPayModByTag(MODULE_ID)
         _vars.update(modSixPay.getValues())
-        six_logger.info('%s', _vars)
         return _vars
 
 
 class WPConfModifEPaymentSixPayDataModif(WPConfModifEPaymentSixPayBase):
     def _getTabContent(self, params):
-        six_logger.info('%s', params)
         wc = WConfModifEPaymentSixPayDataModif(self._conf)
         p = {'postURL': quoteattr(str(localUrlHandlers.UHConfModifEPaymentSixPayPerformDataModif.getURL(self._conf)))}
         return wc.getHTML(p)
@@ -116,7 +109,6 @@ class WPConfModifEPaymentSixPayDataModif(WPConfModifEPaymentSixPayBase):
 class WConfModifEPaymentSixPayDataModif(WConfModifEPaymentSixPay):
     def __init__(self, conference):
         WTemplated.__init__(self)
-        six_logger.info('%s', conference)
         self._conf = conference
 
     def getVars(self):
@@ -139,12 +131,10 @@ class WPTransactionUserCallback(conferences.WPConferenceDefaultDisplayBase):
     message_detail = None
 
     def __init__(self, rh, conf, reg):
-        six_logger.info('%s %s %s', rh, conf, reg)
         conferences.WPConferenceDefaultDisplayBase.__init__(self, rh, conf)
         self._registrant = reg
 
     def _getBody(self, params):
-        six_logger.info('%s', params)
         assert self.display_template is not None, "Callbacks must set display template for users"
         wc = self.display_template(self._conf, self._registrant)
         if self.message is not None:
@@ -154,7 +144,6 @@ class WPTransactionUserCallback(conferences.WPConferenceDefaultDisplayBase):
         return wc.getHTML()
 
     def _defineSectionMenu(self):
-        six_logger.info('%s', 'no parameters')
         conferences.WPConferenceDefaultDisplayBase._defineSectionMenu(self)
         self._sectionMenu.setCurrentItem(self._regFormOpt)
 
@@ -175,7 +164,6 @@ class WTransactionUserCallback(WTemplated):
         vars["message_detail"] = self.message_detail or (
             "%s %s" % (self._registrant.getFirstName(), self._registrant.getSurName())
         )
-        six_logger.info('%s', vars)
         return vars
 
 

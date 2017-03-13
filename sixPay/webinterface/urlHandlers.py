@@ -19,7 +19,7 @@
 from __future__ import absolute_import, division
 from MaKaC.webinterface.urlHandlers import URLHandler as MainURLHandler
 
-from .. import MODULE_ID, six_logger
+from .. import MODULE_ID
 
 
 # Editor's Note  - MF@20170309
@@ -33,7 +33,6 @@ class EPURLHandler(MainURLHandler):
 
     @classmethod
     def getURL(cls, target=None, _ignore_static=False, **params):
-        six_logger.info('%s', (cls, target))
         return super(EPURLHandler, cls).getURL(
             target, EPaymentName=MODULE_ID, requestTag=cls._requestTag, _ignore_static=False, **params
         )
