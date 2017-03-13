@@ -1,3 +1,7 @@
+<!--
+Template for SETTING the current settings of the ePayment plugin for a specific Conference
+Filled by sixPay/webinterface/pages/ePayments.py:WConfModifEPaymentSixPay.getVars
+-->
 <form action=${ postURL } method="POST">
     <table width="80%" align="center" border="0" style="border-left: 1px solid #777777">
         <tr>
@@ -8,20 +12,20 @@
             <td align="left"><input type="text" name="title" size="60" value="${ title }"></td>
         </tr>
         <tr>
-            <td class="dataCaptionTD"><span class="dataCaptionFormat">URL of sixPay</span></td>
+            <td class="dataCaptionTD"><span class="dataCaptionFormat">SixPay Saferpay URL</span></td>
             <td align="left"><input type="text" name="url" size="60" value="${ url }"></td>
         </tr>
         <tr>
-            <td class="dataCaptionTD"><span class="dataCaptionFormat">Master Shop ID</span></td>
-            <td align="left"><input type="text" name="mastershopid" size="60" value="${ mastershopid }"></td>
+            <td class="dataCaptionTD"><span class="dataCaptionFormat">Account ID</span></td>
+            <td align="left"><input type="text" name="account_id" size="60" value="${ account_id }"></td>
         </tr>
         <tr>
-            <td class="dataCaptionTD"><span class="dataCaptionFormat">Shop ID</span></td>
-            <td align="left"><input type="text" name="shopid" size="60" value="${ shopid }"></td>
+            <td class="dataCaptionTD"><span class="dataCaptionFormat">Registrant Transaction Description</span></td>
+            <td align="left"><input type="text" name="user_description" size="60" value="${ user_description }"></td>
         </tr>
         <tr>
-            <td class="dataCaptionTD"><span class="dataCaptionFormat">Hash Seed</span></td>
-            <td align="left"><input type="text" name="hashseed" size="60" value="${ hashseed }"></td>
+            <td class="dataCaptionTD"><span class="dataCaptionFormat">Notification Mail Address</span></td>
+            <td align="left"><input type="text" name="notification_mail" size="60" value="${ notification_mail }"></td>
         </tr>
         <tr><td>&nbsp;</td></tr>
         <tr>

@@ -17,26 +17,51 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import, division
+from xml.dom.minidom import parseString
+
 from MaKaC.epayment import BaseEPayMod, BaseTransaction
-from MaKaC.webinterface import urlHandlers
+from MaKaC.common.timezoneUtils import nowutc
 
 
 from .webinterface import urlHandlers as localUrlHandlers
 from . import MODULE_ID, six_logger
-import md5
+import urlparse
+import requests
+
+
+class TransactionError(BaseException):
+    """An error occured inside the transaction to SixPay"""
 
 
 class SixPayMod(BaseEPayMod):
-    """Payment Module for SIX Payment Service"""
+    """
+    Payment Module for SIX Payment Service
+
+    :param data: mapping to initialise fields
+    :type data: dict or None
+    """
+    #: default settings used when setting fields via `data`
+    default_settings = {
+        'title': "Six Payment Services",
+        'url': "https://www.saferpay.com/hosting",
+        'account_id': "",
+        'notification_mail': "",
+        'user_description': "Indico Event %(event_id)s, Registrant %(user_id)s",
+    }
+
     def __init__(self, data=None):
         six_logger.info('%s', data)
         BaseEPayMod.__init__(self)
-        self._title = "SixPay"
-        # self._url = "https://yellowpay.postfinance.ch/checkout/Yellowpay.aspx?userctrl=Invisible"
-        self._url = "https://www.saferpay.com/hosting"
-        self._shopID = ""
-        self._masterShopID = ""
-        self._hashSeed = ""
+        #: title of this payment method
+        self._title = self.default_settings['title']
+        #: URL for the saferpay https interface
+        self._url = self.default_settings['url']
+        #: saferpay account ID of the conference
+        self.account_id = self.default_settings['account_id']
+        #: description for transaction presented to registrant
+        self.user_description = self.default_settings['user_description']
+        #: mail to send confirmations to
+        self.notification_mail = self.default_settings['notification_mail']
         if data is not None:
             self.setValues(data)
 
@@ -44,89 +69,184 @@ class SixPayMod(BaseEPayMod):
         return MODULE_ID
 
     def clone(self, newSessions):
+        """Return a clone of this instance"""
         self_clone = SixPayMod()
-        self_clone.setTitle(self.getTitle())
-        self_clone.setUrl(self.getUrl())
-        self_clone.setShopID(self.getShopID())
-        self_clone.setMasterShopID(self.getMasterShopID())
-        self_clone.setHashSeed(self.getHashSeed())
+        self_clone.setValues(self.getValues())
         self_clone.setEnabled(self.isEnabled())
         return self_clone
 
     def setValues(self, data):
-        self.setTitle(data.get("title", "epayment"))
-        self.setUrl(data.get("url", ""))
-        self.setShopID(data.get("shopid", ""))
-        self.setMasterShopID(data.get("mastershopid", ""))
-        self.setHashSeed(data.get("hashseed", ""))
+        """
+        Set all fields from mapping
 
-    def getUrl(self):
+        :param data: mapping to initialise fields
+        :type data: dict or None
+
+        :note: any field missing in `data` will be set to its default value
+        """
+        six_logger.info('%s', data)
+        for key in self.default_settings:
+            value = data.get(key) or self.default_settings[key]
+            setattr(self, key, value)
+        six_logger.info('%s', self.getValues())
+
+    def getValues(self):
+        """
+        Get all fields as a mapping
+
+        :return: mapping of all fields
+        :rtype: dict
+
+        :note: any field missing will be set to its default value
+        """
+        return {
+            key: getattr(self, key, self.default_settings[key]) for key in self.default_settings
+        }
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = value
+
+    @property
+    def url(self):
         return self._url
 
-    def setUrl(self, url):
-        self._url = url
+    @url.setter
+    def url(self, value):
+        # ensure a trailing slash at end of path, or merging endpoints does not work
+        url = urlparse.urlparse(value)
+        url = url._replace(path=url.path.rstrip('/') + '/')
+        self._url = url.geturl()
 
-    def getShopID(self):
-        return self._shopID
-
-    def setShopID(self, shopID):
-        self._shopID = shopID
-
-    def getMasterShopID(self):
-        return self._masterShopID
-
-    def setMasterShopID(self, masterShopID):
-        self._masterShopID = masterShopID
-
-    def getHashSeed(self):
-        return self._hashSeed
-
-    def setHashSeed(self, hashSeed):
-        self._hashSeed = hashSeed
+    @staticmethod
+    def _perform_request(endpoint, **params):
+        """Perform a POST request"""
+        six_logger.info('POST %s %s', endpoint, params)
+        url_request = requests.post(endpoint, **params)
+        # raise any request errors
+        url_request.raise_for_status()
+        # raise errors in response
+        if url_request.text.startswith('ERROR'):
+            raise TransactionError('Failed request to SixPay service: %s' % url_request.text)
+        return url_request
 
     def getFormHTML(self, prix, Currency, conf, registrant, lang="en_GB", secure=False):
-        six_logger.info('%s', (prix, Currency, conf, registrant, "en_GB", False))
-        l=[]
-        l.append("%s=%s"%("confId",conf.getId()))
-        l.append("%s=%s"%("registrantId",registrant.getId()))
-        param= "&".join( l )
-        m = md5.new()
-        m.update(self.getShopID())
-        m.update(Currency)
-        m.update("%.2f" % prix)
-        m.update(self.getHashSeed())
-        txtHash = m.hexdigest()
-        s = """ <form action="%s" method="POST" id="%s">
-                      <input type="hidden" name="txtShopId" value="%s">
-                      <input type="hidden" name="txtLangVersion" value="%s">
-                      <input type="hidden" name="txtOrderTotal" value="%s">
-                      <input type="hidden" name="txtArtCurrency" value="%s">
-                      <input type="hidden" name="txtHash" value="%s">
-                      <input type="hidden" name="txtShopPara" value="%s">
-                   </form>
-                       """ % (
-            self.getUrl(),
-            self.getId(),
-            self.getMasterShopID(),
-            "2057",
-            prix,
-            Currency,
-            txtHash,
-            param
-        )
-        return s
+        """Generates the action of the button presented to the user for payment"""
+        six_logger.info('%s', (prix, Currency, conf, registrant, "en_GB", secure))
+        payment_url = self._get_payment_url(prix, Currency, conf, registrant, lang, secure)
+        payment_action = """<form action="%s" method="POST" id="%s"/>""" % (payment_url, self.getId())
+        return payment_action
+
+    def _get_payment_url(self, prix, Currency, conf, registrant, lang, secure):
+        """
+        Generate Payment URL for User
+
+        Transmitting the payment request to Six is separate from prompting the user
+        to avoid modification of payment details.
+        """
+        endpoint = urlparse.urljoin(self.url, 'CreatePayInit.asp')
+        # keys for formatting strings
+        format_map = {'event_id': conf.getId(), 'user_id': registrant.getId(), 'price': prix, 'currency': Currency}
+        # description of transaction presented to user
+        user_description = self.user_description or self.default_settings['user_description']
+        user_description %= format_map
+        parameters = {
+            'ACCOUNTID': str(self.account_id),
+            # indico handles price as largest currency, but six expects smallest
+            # e.g. EUR: indico uses 100.2 Euro, but six expects 10020 Cent
+            'AMOUNT': '%d' % (prix*100),
+            'CURRENCY': Currency,
+            'DESCRIPTION': user_description,
+            'ORDERID': registrant.getIdPay()[:80],
+            'SHOWLANGUAGES': 'yes',
+            # callbacks for the service to redirect users back to indico
+            'SUCCESSLINK': localUrlHandlers.UHPayTransactionSuccess.getURL(target=conf, registrantId=registrant.getId()),
+            'FAILLINK': localUrlHandlers.UHPayTransactionFaillink.getURL(target=conf, registrantId=registrant.getId()),
+            'BACKLINK': localUrlHandlers.UHPayTransactionBacklink.getURL(target=conf, registrantId=registrant.getId()),
+            # callback for the service to confirm transaction
+            'NOTIFYURL': localUrlHandlers.UHPayTransactionNotifyUrl.getURL(target=conf, registrantId=registrant.getId()),
+        }
+        if self.notification_mail:
+            parameters['NOTIFYADDRESS'] = self.notification_mail
+        url_request = self._perform_request(endpoint, data=parameters)
+        return str(url_request.text)
+
+    def verify_transaction(self, data, signature, registrant):
+        """Ensure the transaction is correct in Indico and SixPay"""
+        # DATA: '<IDP
+        #           MSGTYPE="PayConfirm" TOKEN="(unused)" VTVERIFY="(obsolete)" KEYID="1-0"
+        #           ID="9SUO5zbOGY6OUA45b222bhvrpW2A" ACCOUNTID="401860-17795278" PROVIDERID="90" PROVIDERNAME="Saferpay Test Card"
+        #           PAYMENTMETHOD="6" ORDERID="GFSDSZTGMQZDSOJRMQ3DIMZQMFQWGZTFMMYTINZRGUZDCY3BHE2DEZLDMEZDCZJRMFSTKZBVMFTDIYTF"
+        #           AMOUNT="100" CURRENCY="EUR" IP="141.3.200.120" IPCOUNTRY="DE" CCCOUNTRY="US" MPI_LIABILITYSHIFT="yes"
+        #           MPI_TX_CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA=" MPI_XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI=" ECI="1"
+        #           CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA=" XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI=" />'
+        mdom = parseString(data)
+        attributes = mdom.documentElement.attributes
+        idp_data = {
+            attributes.item(idx).name: attributes.item(idx).value
+            for idx in range(attributes.length)
+            }
+        if self._verify_confirmation(data, signature, idp_data=idp_data):
+            # verification may be triggered multiple times
+            if registrant.getPayed() and isinstance(registrant.getTransactionInfo(), TransactionSixPay):
+                return True
+            transaction = TransactionSixPay(
+                user_id=registrant.getId(), event_id=registrant.getConference().getId(),
+                signature=signature, amount=(int(idp_data['AMOUNT']) / 100.0), currency=idp_data['CURRENCY'],
+                six_id=idp_data['ID'], order_id=registrant.getIdPay(),
+            )
+            self._complete_transaction(idp_data=idp_data)
+            registrant.setTransactionInfo(transaction)
+            registrant.setPayed(True)
+            registration_form = registrant.getConference().getRegistrationForm()
+            registration_form.getNotification().sendEmailNewRegistrantConfirmPay(
+                registration_form, registrant
+            )
+        return False
+
+    def _verify_confirmation(self, data, signature, idp_data):
+        """send the confirmation back to SixPay to verify the signature"""
+        endpoint = urlparse.urljoin(self.url, 'VerifyPayConfirm.asp')
+        url_request = self._perform_request(endpoint, data={'DATA': data, 'SIGNATURE': signature})
+        if url_request.text.startswith('OK:'):
+            # text = 'OK:ID=56a77rg243asfhmkq3r&TOKEN=%3e235462FA23C4FE4AF65'
+            confirmation = dict(key_value.split('=') for key_value in url_request.text.split(':', 1)[1].split('&'))
+            six_logger.info('%s %s', confirmation, data)
+            if idp_data['ID'] != confirmation['ID'] or idp_data['ID'] != confirmation['ID']:
+                raise TransactionError('Mismatched verification and confirmation data')
+            return True
+        raise RuntimeError("Expected reply 'OK:ID=...&TOKEN=...', got %r" % url_request.text)
+
+    def _complete_transaction(self, idp_data):
+        """inform SixPay that we agree to the transaction"""
+        endpoint = urlparse.urljoin(self.url, 'PayCompleteV2.asp')
+        data = {'ACCOUNTID': idp_data['ACCOUNTID'], 'ID': idp_data['ID']}
+        if 'test.' in self.url:
+            data['spPassword'] = '8e7Yn5yk'
+        url_request = self._perform_request(endpoint, data=data)
+        return url_request.text.startswith('OK')
 
     def getConfModifEPaymentURL(self, conf):
-        six_logger.info('%s', conf)
+        """URL for applying settings for the EPayment of a single event/conference"""
         return localUrlHandlers.UHConfModifEPaymentSixPay.getURL(conf)
 
 
 class TransactionSixPay(BaseTransaction):
-    """Transaction for SIX Payment Service"""
-    def __init__(self, parms):
-        six_logger.info('%s', parms)
+    """Completed Transaction for SIX Payment Service"""
+    def __init__(self, user_id, event_id, signature, amount, currency, six_id, order_id, date=None):
         BaseTransaction.__init__(self)
-        self._Data = parms
+        self.user_id = user_id
+        self.event_id = event_id
+        self.signature = signature
+        self.amount = amount
+        self.currency = currency
+        self.six_id = six_id
+        self.order_id = order_id
+        self.date = date or nowutc()
 
     def getId(self):
         try:
@@ -135,68 +255,40 @@ class TransactionSixPay(BaseTransaction):
             self._id = "sixpay"
             return self._id
 
+    def _form_data(self):
+        return (
+                ('Service', 'SixPay'),
+                ('Date', self.date),
+                ('Order Total', '%.2f %s' % (self.amount, self.currency)),
+                ('Subject', 'Event %s, Registrant %s' % (self.event_id, self.user_id)),
+                ('Transaction ID', self.order_id),
+                ('Payment ID', self.six_id),
+            )
+
     def getTransactionHTML(self):
-        textOption = """\
+        """HTML for displaying transaction in Indico"""
+        entry = """\
                           <tr>
-                            <td align="right"><b>ESR Member:</b></td>
+                            <td align="right"><b>%s</b></td>
                             <td align="left">%s</td>
-                          </tr>
-                          <tr>
-                            <td align="right"><b>ESR Ref:</b></td>
-                            <td align="left">%s</td>
-                          </tr>
-         """ % (self._Data["ESR_Member"], self._Data["ESR_Ref"])
+                          </tr>"""
         return """\
                         <table>
-                          <tr>
-                            <td align="right"><b>Payment with:</b></td>
-                            <td align="left">SixPay</td>
-                          </tr>
-                          <tr>
-                            <td align="right"><b>Payment Date:</b></td>
-                            <td align="left">%s</td>
-                          </tr>
-                          <tr>
-                            <td align="right"><b>TransactionID:</b></td>
-                            <td align="left">%s</td>
-                          </tr>
-                          <tr>
-                            <td align="right"><b>Order Total:</b></td>
-                            <td align="left">%s %s</td>
-                          </tr>
-                          <tr>
-                            <td align="right"><b>PayMet:</b></td>
-                            <td align="left">%s</td>
-                          </tr>
-                          %s
-                        </table>""" % (
-            self._Data["payment_date"],
-            self._Data["TransactionID"],
-            self._Data["OrderTotal"],
-            self._Data["Currency"],
-            self._Data["PayMet"],
-            textOption
+%s
+                        </table>""" % '\n'.join(
+            entry % (name, value)
+            for name, value in
+            self._form_data()
         )
 
     def getTransactionTxt(self):
-        textOption = """
-\tESR Member:%s\n
-\tESR Ref:%s\n
-""" % (self._Data["ESR_Member"], self._Data["ESR_Ref"])
-        return """
-\tPayment with:SixPay\n
-\tPayment Date:%s\n
-\tTransactionID:%s\n
-\tOrder Total:%s %s\n
-\tPayMet:%s
-%s
-""" % (
-            self._Data["payment_date"],
-            self._Data["TransactionID"],
-            self._Data["OrderTotal"],
-            self._Data["Currency"],
-            self._Data["PayMet"],
-            textOption)
+        """Text for displaying transaction in mails"""
+        entry = """%-16s %s"""
+        return '\n'.join(
+            entry % (name, value)
+            for name, value in
+            self._form_data()
+        )
 
 
 def getPayMod():

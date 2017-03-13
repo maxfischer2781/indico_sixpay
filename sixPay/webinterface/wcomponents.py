@@ -22,15 +22,25 @@ import os
 import pkg_resources
 import MaKaC.common.Configuration as Configuration
 
-from .. import __init__ as pay_plugin
+import sixPay as pay_plugin
+
+
+# Editor's Note  - MF@20170309
+# This file exists only as an auxiliary to .pages.ePayments
+# I have no idea why it is separate
 
 
 class WTemplated(wcomponents.WTemplated):
+    # Editor's Note  - MF@20170309
+    # If you are wondering how tplId is set:
+    #   WTemplated sets it an arbitrary time after __init__ in getHTML (!!!) to
+    # self.tplId = self.__class__.__name__[1:]
     def _setTPLFile(self):
-        """Sets the TPL (template) file for the object. It will try to get
-            from the configuration if there's a special TPL file for it and
-            if not it will look for a file called as the class name+".tpl"
-            in the configured TPL directory.
+        """
+        Guesses the TPL (template) file for the object. It will try to get
+        from the configuration if there's a special TPL file for it and
+        if not it will look for a file called as the class name+".tpl"
+        in the configured TPL directory.
         """
         cfg = Configuration.Config.getInstance()
         tpl_dir = pkg_resources.resource_filename(pay_plugin.__name__, "tpls")

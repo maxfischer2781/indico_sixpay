@@ -30,9 +30,17 @@ from .. import urlHandlers as localUrlHandlers
 from ... import MODULE_ID, six_logger
 
 
+# Editor's Note  - MF@20170309
+# * The W<.....> classes build templates pages
+# Thanks to Magic [TM] indico pulls the templates from the `tpls` folder
+# This is done using the class name MINUS THE FIRST CHARACTER. Example:
+# class WConfModifEPaymentSixPay => ConfModifEPaymentSixPay.tpl
+# * These classes are used by the RequestHandlers if they need to display stuff
+
+
 class WPConfModifEPaymentSixPayBase(registrationForm.WPConfModifRegFormBase):
     def _createTabCtrl(self):
-        six_logger.info('%s', None)
+        six_logger.info('%s', 'no parameters')
         self._tabCtrl = wcomponents.TabControl()
         self._tabMain = self._tabCtrl.newTab(
             "main",
@@ -71,55 +79,142 @@ class WPConfModifEPaymentSixPay(WPConfModifEPaymentSixPayBase):
         }
         return wc.getHTML(p)
 
+    def display(self, **params):
+        six_logger.info('%s', params)
+        result = WPConfModifEPaymentSixPayBase.display(self, **params)
+        return result
+
 
 class WConfModifEPaymentSixPay(WTemplated):
     def __init__(self, conference):
+        WTemplated.__init__(self)
         six_logger.info('%s', conference)
         self._conf = conference
 
     def getVars(self):
-        vars = WTemplated.getVars(self)
-        six_logger.info('%s', vars)
+        """
+        Current settings of this EPayment Module for display
+
+        Displayed via `tpls/ConfModifEPaymentSixPay.tpl`.
+        """
+        six_logger.info('%s %s', self, 'no parameters')
+        _vars = WTemplated.getVars(self)
         modSixPay = self._conf.getModPay().getPayModByTag(MODULE_ID)
-        vars["title"] = modSixPay.getTitle()
-        vars["url"] = modSixPay.getUrl()
-        vars["shopid"] = modSixPay.getShopID()
-        vars["mastershopid"] = modSixPay.getMasterShopID()
-        vars["hashseed"] = modSixPay.getHashSeed()
-        return vars
+        _vars.update(modSixPay.getValues())
+        six_logger.info('%s', _vars)
+        return _vars
 
 
 class WPConfModifEPaymentSixPayDataModif(WPConfModifEPaymentSixPayBase):
     def _getTabContent(self, params):
         six_logger.info('%s', params)
         wc = WConfModifEPaymentSixPayDataModif(self._conf)
-        p = {'postURL': quoteattr(str(localUrlHandlers.UHConfModifEPaymentSixPayPerformDataModif.getURL(self._conf)))
-             }
+        p = {'postURL': quoteattr(str(localUrlHandlers.UHConfModifEPaymentSixPayPerformDataModif.getURL(self._conf)))}
         return wc.getHTML(p)
 
 
-class WConfModifEPaymentSixPayDataModif(WTemplated):
+class WConfModifEPaymentSixPayDataModif(WConfModifEPaymentSixPay):
     def __init__(self, conference):
+        WTemplated.__init__(self)
         six_logger.info('%s', conference)
         self._conf = conference
 
     def getVars(self):
+        """
+        Current settings of this EPayment Module for modification
+
+        Displayed via `tpls/ConfModifEPaymentSixPayDataModif.tpl`.
+        """
+        return WConfModifEPaymentSixPay.getVars(self)
+
+
+# Pages for the Six Pay service to call back after/during a transaction
+class WPTransactionUserCallback(conferences.WPConferenceDefaultDisplayBase):
+    """Request Handler for Callbacks the User is directed to"""
+    #: display page after handling transaction
+    display_template = None
+    #: overwrite message on the displayed page
+    message = None
+    #: overwrite message detail on the displayed page
+    message_detail = None
+
+    def __init__(self, rh, conf, reg):
+        six_logger.info('%s %s %s', rh, conf, reg)
+        conferences.WPConferenceDefaultDisplayBase.__init__(self, rh, conf)
+        self._registrant = reg
+
+    def _getBody(self, params):
+        six_logger.info('%s', params)
+        assert self.display_template is not None, "Callbacks must set display template for users"
+        wc = self.display_template(self._conf, self._registrant)
+        if self.message is not None:
+            wc.message = self.message
+        if self.message_detail is not None:
+            wc.message_detail = self.message_detail
+        return wc.getHTML()
+
+    def _defineSectionMenu(self):
+        six_logger.info('%s', 'no parameters')
+        conferences.WPConferenceDefaultDisplayBase._defineSectionMenu(self)
+        self._sectionMenu.setCurrentItem(self._regFormOpt)
+
+
+class WTransactionUserCallback(WTemplated):
+    message = None
+    message_detail = None
+
+    def __init__(self, configuration, registrant):
+        WTemplated.__init__(self)
+        self._registrant = registrant
+        self._conf = configuration
+
+    def getVars(self):
         vars = WTemplated.getVars(self)
+        assert self.message is not None, "Callbacks must set display message for users"
+        vars["message"] = self.message
+        vars["message_detail"] = self.message_detail or (
+            "%s %s" % (self._registrant.getFirstName(), self._registrant.getSurName())
+        )
         six_logger.info('%s', vars)
-        modSixPay = self._conf.getModPay().getPayModByTag(MODULE_ID)
-        vars["title"] = modSixPay.getTitle()
-        vars["url"] = modSixPay.getUrl()
-        vars["shopid"] = modSixPay.getShopID()
-        vars["mastershopid"] = modSixPay.getMasterShopID()
-        vars["hashseed"] = modSixPay.getHashSeed()
         return vars
 
 
+class WTransactionSuccesslink(WTransactionUserCallback):
+    """redirect when the user completed the transaction"""
+    message = "Your payment has been successfully processed"
+
+
+class WPTransactionSuccesslink(WPTransactionUserCallback):
+    """redirect when the user completed the transaction"""
+    display_template = WTransactionSuccesslink
+
+
+class WTransactionFaillink(WTransactionUserCallback):
+    """redirect when the user could not be authorised"""
+    message = "You could not be authorised by the payment service"
+
+
+class WPTransactionFaillink(WPTransactionUserCallback):
+    """redirect when the user could not be authorised"""
+    display_template = WTransactionFaillink
+
+
+class WTransactionBacklink(WTransactionUserCallback):
+    """redirect when the user aborts the transaction"""
+    message = "You have aborted the transaction"
+
+
+class WPTransactionBacklink(WPTransactionUserCallback):
+    """redirect when the user aborts the transaction"""
+    display_template = WTransactionBacklink
+
+
+# TODO: remove old stuff
 class WPconfirmEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
     # navigationEntry = navigation.NERegistrationFormDisplay
 
     def __init__(self, rh, conf, reg):
-        six_logger.info('%s', (rh, conf, reg))
+        six_logger.info('%s %s %s', rh, conf, reg)
         conferences.WPConferenceDefaultDisplayBase.__init__(self, rh, conf)
         self._registrant = reg
 
@@ -129,21 +224,22 @@ class WPconfirmEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
         return wc.getHTML()
 
     def _defineSectionMenu(self):
-        six_logger.info('%s', None)
+        six_logger.info('%s', 'no parameters')
         conferences.WPConferenceDefaultDisplayBase._defineSectionMenu(self)
         self._sectionMenu.setCurrentItem(self._regFormOpt)
 
 
 class WconfirmEPaymentSixPay(WTemplated):
     def __init__(self, configuration, registrant):
-        six_logger.info('%s', (configuration, registrant))
+        WTemplated.__init__(self)
+        six_logger.info('%s %s', configuration, registrant)
         self._registrant = registrant
         self._conf = configuration
 
     def getVars(self):
         vars = WTemplated.getVars(self)
         six_logger.info('%s', vars)
-        vars["message"] = "Thank you, your payment has been accepted by SixPay"
+        vars["message"] = "Your payment has been successfully processed by SixPay"
         vars["trinfo"] = "%s:%s" % (self._registrant.getFirstName(), self._registrant.getSurName())
         return vars
 
@@ -152,7 +248,7 @@ class WPCancelEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
     # navigationEntry = navigation.NERegistrationFormDisplay
 
     def __init__(self, rh, conf, reg):
-        six_logger.info('%s', (rh, conf, reg))
+        six_logger.info('%s %s %s', rh, conf, reg)
         conferences.WPConferenceDefaultDisplayBase.__init__(self, rh, conf)
         self._registrant = reg
 
@@ -168,6 +264,7 @@ class WPCancelEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
 
 class WCancelEPaymentSixPay(WTemplated):
     def __init__(self, conference, reg):
+        WTemplated.__init__(self)
         self._conf = conference
         self._registrant = reg
 
@@ -183,7 +280,7 @@ class WPNotconfirmEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
     # navigationEntry = navigation.NERegistrationFormDisplay
 
     def __init__(self, rh, conf, reg):
-        six_logger.info('%s', (rh, conf, reg))
+        six_logger.info('%s %s %s', rh, conf, reg)
         conferences.WPConferenceDefaultDisplayBase.__init__(self, rh, conf)
         self._registrant = reg
 
@@ -199,6 +296,7 @@ class WPNotconfirmEPaymentSixPay(conferences.WPConferenceDefaultDisplayBase):
 
 class WNotconfirmEPaymentSixPay(WTemplated):
     def __init__(self, conference, reg):
+        WTemplated.__init__(self)
         six_logger.info('%s', (conference, reg))
         self._conf = conference
         self._registrant = reg

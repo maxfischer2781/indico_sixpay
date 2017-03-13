@@ -22,15 +22,24 @@ from MaKaC.webinterface.urlHandlers import URLHandler as MainURLHandler
 from .. import MODULE_ID, six_logger
 
 
+# Editor's Note  - MF@20170309
+# These classes simply define URLs *on the indico server* which are open handles
+# for external requests. The requestTag is used to search corresponding pages/actions
+# in other submodules.
+
+
 class EPURLHandler(MainURLHandler):
     _requestTag = ''
 
     @classmethod
-    def getURL(cls, target=None):
+    def getURL(cls, target=None, _ignore_static=False, **params):
         six_logger.info('%s', (cls, target))
-        return super(EPURLHandler, cls).getURL(target, EPaymentName=MODULE_ID, requestTag=cls._requestTag)
+        return super(EPURLHandler, cls).getURL(
+            target, EPaymentName=MODULE_ID, requestTag=cls._requestTag, _ignore_static=False, **params
+        )
 
 
+# URLs for Indico to modify the plugin
 class UHConfModifEPayment(EPURLHandler):
     _endpoint = 'event_mgmt.confModifEpayment-modifModule'
 
@@ -51,6 +60,28 @@ class UHPay(EPURLHandler):
     _endpoint = 'misc.payment'
 
 
+# URLs given to the Six Pay service to call back after/during a transaction
+class UHPayTransactionSuccess(UHPay):
+    # redirect when the user completed the transaction
+    _requestTag = "successlink"
+
+
+class UHPayTransactionFaillink(UHPay):
+    # redirect when the user could not be authorised
+    _requestTag = "faillink"
+
+
+class UHPayTransactionBacklink(UHPay):
+    # redirect when the user aborts the transaction
+    _requestTag = "backlink"
+
+
+class UHPayTransactionNotifyUrl(UHPay):
+    # endpoint for SixPay to confirm transaction WITHOUT user intervention
+    _requestTag = "notifyurl"
+
+
+# TODO: remove old stuff
 class UHPayConfirmSixPay(UHPay):
     _requestTag = "effectuer"
 
