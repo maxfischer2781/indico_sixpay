@@ -20,9 +20,6 @@ from MaKaC.webinterface.pages import conferences
 from MaKaC.webinterface.pages import registrationForm
 from MaKaC.webinterface import wcomponents
 from xml.sax.saxutils import quoteattr
-from indico.core import config as Configuration
-from MaKaC.webinterface import urlHandlers
-import MaKaC
 
 from ..wcomponents import WTemplated
 from .. import urlHandlers as localUrlHandlers
@@ -161,7 +158,7 @@ class WTransactionUserCallback(WTemplated):
         assert self.message is not None, "Callbacks must set display message for users"
         vars["message"] = self.message
         vars["message_detail"] = self.message_detail or (
-            "%s %s" % (self._registrant.getFirstName(), self._registrant.getSurName())
+            "Registrant: %s %s" % (self._registrant.getFirstName(), self._registrant.getSurName())
         )
         return vars
 
