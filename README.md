@@ -22,11 +22,11 @@ This Plugin supports the following per-event settings:
   The ID of your Saferpay account.
   For testing, use the ID `401860-17795278`.
 
-* **Registrant Transaction Description**
+* **Transaction Description**
 
   The name of the transaction presented to the registrant during the transaction with SixPay.
-  
-* **Notification Mail Address**
+
+* **Notification Mail**
 
   Mail address to receive notifications of transactions.
   This is independent of Indico's own payment notifications.
