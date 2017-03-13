@@ -205,14 +205,14 @@ class SixPayMod(BaseEPayMod):
             for idx in range(attributes.length)
         }
         if self._verify_confirmation(data, signature, idp_data=idp_data):
-            # verification may be triggered multiple times
-            if registrant.getPayed() and isinstance(registrant.getTransactionInfo(), TransactionSixPay):
-                return True
             transaction = TransactionSixPay(
                 user_id=registrant.getId(), event_id=registrant.getConference().getId(),
                 signature=signature, amount=(int(idp_data['AMOUNT']) / 100.0), currency=idp_data['CURRENCY'],
                 six_id=idp_data['ID'], order_id=registrant.getIdPay(),
             )
+            # verification may be triggered multiple times
+            if registrant.getPayed() and registrant.getTransactionInfo() == TransactionSixPay:
+                return True
             self._complete_transaction(idp_data=idp_data)
             registrant.setTransactionInfo(transaction)
             registrant.setPayed(True)
@@ -261,6 +261,12 @@ class TransactionSixPay(BaseTransaction):
         self.six_id = six_id
         self.order_id = order_id
         self.date = date or nowutc()
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.six_id == other.six_id and self.order_id == other.order_id and self.signature == other.signature
+        else:
+            return NotImplemented
 
     def getId(self):
         try:
