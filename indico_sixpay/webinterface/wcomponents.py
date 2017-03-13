@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 ##
+## This file is part of the SixPay Indico EPayment Plugin.
+## Copyright (C) 2017 Max Fischer
 ##
-## This file is part of Indico.
-## Copyright (C) 2002 - 2014 European Organization for Nuclear Research (CERN).
-##
-## Indico is free software; you can redistribute it and/or
+## This is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
 ## published by the Free Software Foundation; either version 3 of the
 ## License, or (at your option) any later version.
 ##
-## Indico is distributed in the hope that it will be useful, but
+## This software is distributed in the hope that it will be useful, but
 ## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 ## General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
@@ -22,7 +21,7 @@ import os
 import pkg_resources
 import MaKaC.common.Configuration as Configuration
 
-import sixPay as pay_plugin
+import indico_sixpay as pay_plugin
 
 
 # Editor's Note  - MF@20170309

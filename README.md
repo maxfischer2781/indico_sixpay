@@ -3,15 +3,6 @@
 Plugin for Indico EPayment, enabling support for SIX Payment service.
 This enables EPayment using the SIX Payment Service in conferences and other events.
 
-## Installation
-
-Download this repository to any host running indico.
-Install it by running
-
-    python setup.py install
-
-After reloading the EPayment plugin in the Indico Admin panel, you can enable the SixPay service.
-
 ## Module Settings
 
 This Plugin supports the following per-event settings:
@@ -39,6 +30,24 @@ This Plugin supports the following per-event settings:
 
   Mail address to receive notifications of transactions.
   This is independent of Indico's own payment notifications.
+
+## Installation
+
+The plugin can be installed using standard Python package managers.
+Note that at least `indico` 1.2 is required, and may be installed automatically.
+
+### Release Version
+
+
+
+### Latest Version
+
+Download this repository to any host running indico.
+Install it by running
+
+    python setup.py install
+
+After reloading the EPayment plugin in the Indico Admin panel, you can enable the SixPay service.
 
 ## Disclaimer
 
