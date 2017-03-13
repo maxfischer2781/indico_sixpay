@@ -17,6 +17,8 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Indico;if not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import, division
+import urlparse
+import requests
 from xml.dom.minidom import parseString
 
 from MaKaC.epayment import BaseEPayMod, BaseTransaction
@@ -25,12 +27,10 @@ from MaKaC.common.timezoneUtils import nowutc
 
 from .webinterface import urlHandlers as localUrlHandlers
 from . import MODULE_ID, six_logger
-import urlparse
-import requests
 
 
 class TransactionError(BaseException):
-    """An error occured inside the transaction to SixPay"""
+    """An error occurred inside the transaction to SixPay"""
 
 
 class SixPayMod(BaseEPayMod):
@@ -154,6 +154,8 @@ class SixPayMod(BaseEPayMod):
         # description of transaction presented to user
         user_description = self.user_description or self.default_settings['user_description']
         user_description %= format_map
+        # parameters for callbacks so that indico can identify the transaction subject
+        callback_params = {'target': conf, 'registrantId': registrant.getId()}
         parameters = {
             'ACCOUNTID': str(self.account_id),
             # indico handles price as largest currency, but six expects smallest
@@ -164,11 +166,11 @@ class SixPayMod(BaseEPayMod):
             'ORDERID': registrant.getIdPay()[:80],
             'SHOWLANGUAGES': 'yes',
             # callbacks for the service to redirect users back to indico
-            'SUCCESSLINK': localUrlHandlers.UHPayTransactionSuccess.getURL(target=conf, registrantId=registrant.getId()),
-            'FAILLINK': localUrlHandlers.UHPayTransactionFaillink.getURL(target=conf, registrantId=registrant.getId()),
-            'BACKLINK': localUrlHandlers.UHPayTransactionBacklink.getURL(target=conf, registrantId=registrant.getId()),
+            'SUCCESSLINK': localUrlHandlers.UHPayTransactionSuccess.getURL(**callback_params),
+            'FAILLINK': localUrlHandlers.UHPayTransactionFaillink.getURL(**callback_params),
+            'BACKLINK': localUrlHandlers.UHPayTransactionBacklink.getURL(**callback_params),
             # callback for the service to confirm transaction
-            'NOTIFYURL': localUrlHandlers.UHPayTransactionNotifyUrl.getURL(target=conf, registrantId=registrant.getId()),
+            'NOTIFYURL': localUrlHandlers.UHPayTransactionNotifyUrl.getURL(**callback_params),
         }
         if self.notification_mail:
             parameters['NOTIFYADDRESS'] = self.notification_mail
@@ -179,17 +181,29 @@ class SixPayMod(BaseEPayMod):
         """Ensure the transaction is correct in Indico and SixPay"""
         # DATA: '<IDP
         #           MSGTYPE="PayConfirm" TOKEN="(unused)" VTVERIFY="(obsolete)" KEYID="1-0"
-        #           ID="9SUO5zbOGY6OUA45b222bhvrpW2A" ACCOUNTID="401860-17795278" PROVIDERID="90" PROVIDERNAME="Saferpay Test Card"
-        #           PAYMENTMETHOD="6" ORDERID="GFSDSZTGMQZDSOJRMQ3DIMZQMFQWGZTFMMYTINZRGUZDCY3BHE2DEZLDMEZDCZJRMFSTKZBVMFTDIYTF"
-        #           AMOUNT="100" CURRENCY="EUR" IP="141.3.200.120" IPCOUNTRY="DE" CCCOUNTRY="US" MPI_LIABILITYSHIFT="yes"
-        #           MPI_TX_CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA=" MPI_XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI=" ECI="1"
-        #           CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA=" XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI=" />'
+        #           ID="9SUO5zbOGY6OUA45b222bhvrpW2A"
+        #           ACCOUNTID="401860-17795278"
+        #           PROVIDERID="90"
+        #           PROVIDERNAME="Saferpay Test Card"
+        #           PAYMENTMETHOD="6"
+        #           ORDERID="GFSDSZTGMQZDSOJRMQ3DIMZQMFQWGZTFMMYTINZRGUZDCY3BHE2DEZLDMEZDCZJRMFSTKZBVMFTDIYTF"
+        #           AMOUNT="100"
+        #           CURRENCY="EUR"
+        #           IP="141.3.200.120"
+        #           IPCOUNTRY="DE"
+        #           CCCOUNTRY="US"
+        #           MPI_LIABILITYSHIFT="yes"
+        #           MPI_TX_CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA="
+        #           MPI_XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI="
+        #           ECI="1"
+        #           CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA="
+        #           XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI=" />'
         mdom = parseString(data)
         attributes = mdom.documentElement.attributes
         idp_data = {
             attributes.item(idx).name: attributes.item(idx).value
             for idx in range(attributes.length)
-            }
+        }
         if self._verify_confirmation(data, signature, idp_data=idp_data):
             # verification may be triggered multiple times
             if registrant.getPayed() and isinstance(registrant.getTransactionInfo(), TransactionSixPay):
