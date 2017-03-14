@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='indico_sixpay',
-    version='1.2.0',
+    version='1.2.1',
     description='Indico EPayment Sub-Plugin to use SixPay services',
     url='https://github.com/maxfischer2781/indico_sixpay',
     author='Max Fischer',
