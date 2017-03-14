@@ -205,7 +205,7 @@ class SixPayMod(BaseEPayMod):
                 six_id=idp_data['ID'], order_id=registrant.getIdPay(),
             )
             # verification may be triggered multiple times
-            if registrant.getPayed() and registrant.getTransactionInfo() == TransactionSixPay:
+            if registrant.getPayed() and registrant.getTransactionInfo() == transaction:
                 return True
             self._complete_transaction(idp_data=idp_data)
             registrant.setTransactionInfo(transaction)
