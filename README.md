@@ -45,6 +45,10 @@ You can directly install the module using `pip`:
 
     pip install indico_sixpay
 
+This can also be used to upgrade to a newer version:
+
+    pip install indico_sixpay --upgrade
+
 ### Latest Version
 
 Download this repository to any host running indico.
