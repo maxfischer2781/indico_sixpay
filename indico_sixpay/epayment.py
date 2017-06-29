@@ -45,7 +45,8 @@ class SixPayMod(BaseEPayMod):
         'url': "https://www.saferpay.com/hosting",
         'account_id': "",
         'notification_mail': "",
-        'user_description': "Indico Event %(event_id)s, Registrant %(user_id)s",
+        'user_description': "%(event_title)s, %(user_name)s",
+        'order_description': "%(eventuser_id)s%(event_title).12s",
     }
 
     def __init__(self, data=None):
@@ -58,6 +59,8 @@ class SixPayMod(BaseEPayMod):
         self.account_id = self.default_settings['account_id']
         #: description for transaction presented to registrant
         self.user_description = self.default_settings['user_description']
+        #: internal description for transaction for organiser and accounting
+        self.order_description = self.default_settings['order_description']
         #: mail to send confirmations to
         self.notification_mail = self.default_settings['notification_mail']
         if data is not None:
@@ -139,15 +142,30 @@ class SixPayMod(BaseEPayMod):
         """
         Generate Payment URL for User
 
-        Transmitting the payment request to Six is separate from prompting the user
-        to avoid modification of payment details.
+        This method uses the payment details to generate a signed payment URL
+        that is secure against manipulation.
+        Transmitting the payment request to Six is separate from prompting the
+        user to avoid modification of payment details.
+
+        :type registrant: MaKaC.registration.Registrant
+        :type conf: MaKaC.conference.Conference
         """
         endpoint = urlparse.urljoin(self.url, 'CreatePayInit.asp')
         # keys for formatting strings
-        format_map = {'event_id': conf.getId(), 'user_id': registrant.getId(), 'price': prix, 'currency': Currency}
+        format_map = {
+            'user_id': registrant.getId(), 'user_name': registrant.getFullName(firstNameFirst=True),
+            'user_firstname': registrant.getFirstName(), 'user_lastname': registrant.getSurName(),
+            'event_id': conf.getId(), 'event_title': conf.getTitle(),
+            'eventuser_id': registrant.getIdPay(),
+            'price': prix, 'currency': Currency
+        }
         # description of transaction presented to user
         user_description = self.user_description or self.default_settings['user_description']
         user_description %= format_map
+        # internal description for transaction for organiser and accounting
+        order_description = self.default_settings['order_description']
+        order_description %= format_map
+        order_description = ''.join(order_description.split())
         # parameters for callbacks so that indico can identify the transaction subject
         callback_params = {'target': conf, 'registrantId': registrant.getId()}
         parameters = {
@@ -156,8 +174,8 @@ class SixPayMod(BaseEPayMod):
             # e.g. EUR: indico uses 100.2 Euro, but six expects 10020 Cent
             'AMOUNT': '%d' % (prix*100),
             'CURRENCY': Currency,
-            'DESCRIPTION': user_description,
-            'ORDERID': registrant.getIdPay()[:80],
+            'DESCRIPTION': user_description[:50],
+            'ORDERID': order_description[:80],
             'SHOWLANGUAGES': 'yes',
             # callbacks for the service to redirect users back to indico
             'SUCCESSLINK': localUrlHandlers.UHPayTransactionSuccess.getURL(**callback_params),
@@ -180,7 +198,7 @@ class SixPayMod(BaseEPayMod):
         #           PROVIDERID="90"
         #           PROVIDERNAME="Saferpay Test Card"
         #           PAYMENTMETHOD="6"
-        #           ORDERID="GFSDSZTGMQZDSOJRMQ3DIMZQMFQWGZTFMMYTINZRGUZDCY3BHE2DEZLDMEZDCZJRMFSTKZBVMFTDIYTF"
+        #           ORDERID="c281r4"
         #           AMOUNT="100"
         #           CURRENCY="EUR"
         #           IP="141.3.200.120"
