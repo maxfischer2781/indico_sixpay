@@ -153,7 +153,7 @@ class SixPayMod(BaseEPayMod):
         endpoint = urlparse.urljoin(self.url, 'CreatePayInit.asp')
         # keys for formatting strings
         format_map = {
-            'user_id': registrant.getId(), 'user_name': registrant.getFullName(firstNameFirst=True),
+            'user_id': registrant.getId(), 'user_name': registrant.getFullName(title=False, firstNameFirst=True),
             'user_firstname': registrant.getFirstName(), 'user_lastname': registrant.getSurName(),
             'event_id': conf.getId(), 'event_title': conf.getTitle(),
             'eventuser_id': registrant.getIdPay(),
