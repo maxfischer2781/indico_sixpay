@@ -176,7 +176,7 @@ class SixPayMod(BaseEPayMod):
         return user_description
 
     def _get_order_description(self, format_map):
-        order_description = self.default_settings['order_description']
+        order_description = self.order_description
         order_description %= format_map
         return ''.join(order_description.split())
 
