@@ -32,6 +32,38 @@ class TransactionError(BaseException):
     """An error occurred inside the transaction to SixPay"""
 
 
+class SixPayFormatFieldMap(object):
+    """
+    Mapping lazily providing format fields
+
+    :type registrant: MaKaC.registration.Registrant
+    :type conference: MaKaC.conference.Conference
+    """
+    def __init__(self, registrant, conference):
+        self.registrant = registrant
+        self.conference = conference
+        self._field_cache = {}
+        self._field_maker = {
+            'user_id': registrant.getId, 'user_name': lambda: registrant.getFullName(title=False, firstNameFirst=True),
+            'user_firstname': registrant.getFirstName, 'user_lastname': registrant.getSurName,
+            'event_id': conference.getId, 'event_title': conference.getTitle,
+            'eventuser_id': registrant.getIdPay,
+        }
+
+    def __getitem__(self, key):
+        try:
+            item = self._field_cache[key]
+        except KeyError:
+            item = self._field_cache[key] = self._field_maker[key]()
+        return item
+
+    def __setitem__(self, key, value):
+        self._field_cache[key] = value
+
+    def __repr__(self):
+        return '%s(registrant=%s, conference=%s)' % (self.__class__.__name__, self.registrant, self.conference)
+
+
 class SixPayMod(BaseEPayMod):
     """
     Payment Module for SIX Payment Service
@@ -138,6 +170,16 @@ class SixPayMod(BaseEPayMod):
         payment_action = """<form action="%s" method="POST" id="%s"/>""" % (payment_url, self.getId())
         return payment_action
 
+    def _get_user_description(self, format_map):
+        user_description = self.user_description
+        user_description %= format_map
+        return user_description
+
+    def _get_order_description(self, format_map):
+        order_description = self.default_settings['order_description']
+        order_description %= format_map
+        return ''.join(order_description.split())
+
     def _get_payment_url(self, prix, Currency, conf, registrant, lang, secure):
         """
         Generate Payment URL for User
@@ -152,20 +194,11 @@ class SixPayMod(BaseEPayMod):
         """
         endpoint = urlparse.urljoin(self.url, 'CreatePayInit.asp')
         # keys for formatting strings
-        format_map = {
-            'user_id': registrant.getId(), 'user_name': registrant.getFullName(title=False, firstNameFirst=True),
-            'user_firstname': registrant.getFirstName(), 'user_lastname': registrant.getSurName(),
-            'event_id': conf.getId(), 'event_title': conf.getTitle(),
-            'eventuser_id': registrant.getIdPay(),
-            'price': prix, 'currency': Currency
-        }
+        format_map = SixPayFormatFieldMap(registrant=registrant, conference=conf)
         # description of transaction presented to user
-        user_description = self.user_description or self.default_settings['user_description']
-        user_description %= format_map
-        # internal description for transaction for organiser and accounting
-        order_description = self.default_settings['order_description']
-        order_description %= format_map
-        order_description = ''.join(order_description.split())
+        user_description = self._get_user_description(format_map)
+        # internal description of transaction for organiser and accounting
+        order_description = self._get_order_description(format_map)
         # parameters for callbacks so that indico can identify the transaction subject
         callback_params = {'target': conf, 'registrantId': registrant.getId()}
         parameters = {
@@ -217,10 +250,12 @@ class SixPayMod(BaseEPayMod):
             for idx in range(attributes.length)
         }
         if self._verify_confirmation(data, signature, idp_data=idp_data):
+            conference = registrant.getConference()
+            format_map = SixPayFormatFieldMap(registrant=registrant, conference=conference)
             transaction = TransactionSixPay(
-                user_id=registrant.getId(), event_id=registrant.getConference().getId(),
+                user_id=registrant.getId(), event_id=conference.getId(),
                 signature=signature, amount=(int(idp_data['AMOUNT']) / 100.0), currency=idp_data['CURRENCY'],
-                six_id=idp_data['ID'], order_id=registrant.getIdPay(),
+                six_id=idp_data['ID'], order_id=idp_data['ORDERID'], subject=self._get_user_description(format_map)
             )
             # verification may be triggered multiple times
             if registrant.getPayed() and registrant.getTransactionInfo() == transaction:
@@ -235,7 +270,7 @@ class SixPayMod(BaseEPayMod):
         return False
 
     def _verify_confirmation(self, data, signature, idp_data):
-        """send the confirmation back to SixPay to verify the signature"""
+        """ask for confirmation from SixPay for the signature of the transaction"""
         endpoint = urlparse.urljoin(self.url, 'VerifyPayConfirm.asp')
         url_request = self._perform_request(endpoint, data={'DATA': data, 'SIGNATURE': signature})
         if url_request.text.startswith('OK:'):
@@ -262,7 +297,7 @@ class SixPayMod(BaseEPayMod):
 
 class TransactionSixPay(BaseTransaction):
     """Completed Transaction for SIX Payment Service"""
-    def __init__(self, user_id, event_id, signature, amount, currency, six_id, order_id, date=None):
+    def __init__(self, user_id, event_id, signature, amount, currency, six_id, order_id, date=None, subject=None):
         BaseTransaction.__init__(self)
         self.user_id = user_id
         self.event_id = event_id
@@ -272,6 +307,7 @@ class TransactionSixPay(BaseTransaction):
         self.six_id = six_id
         self.order_id = order_id
         self.date = date or nowutc()
+        self.subject = subject or ('Event %s, Registrant %s' % (self.event_id, self.user_id))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -291,7 +327,7 @@ class TransactionSixPay(BaseTransaction):
                 ('Service', 'SixPay'),
                 ('Date', self.date),
                 ('Order Total', '%.2f %s' % (self.amount, self.currency)),
-                ('Subject', 'Event %s, Registrant %s' % (self.event_id, self.user_id)),
+                ('Subject', self.subject),
                 ('Transaction ID', self.order_id),
                 ('Payment ID', self.six_id),
             )
