@@ -25,7 +25,7 @@ Filled by sixPay/webinterface/pages/ePayments.py:WConfModifEPaymentSixPay.getVar
         </tr>
         <tr>
             <td class="dataCaptionTD"><span class="dataCaptionFormat">Order Identifier</span></td>
-            <td align="left"><input type="text" name="order_identifier" size="60" value="${ order_description }"></td>
+            <td align="left"><input type="text" name="order_identifier" size="60" value="${ order_identifier }"></td>
         </tr>
         <tr>
             <td class="dataCaptionTD"><span class="dataCaptionFormat">Notification Mail</span></td>
