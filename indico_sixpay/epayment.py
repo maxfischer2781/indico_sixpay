@@ -78,7 +78,7 @@ class SixPayMod(BaseEPayMod):
         'account_id': "",
         'notification_mail': "",
         'user_description': "%(event_title)s, %(user_name)s",
-        'order_identifier': "%(eventuser_id)s%(event_title).12s",
+        'order_identifier': "%(eventuser_id)s",
     }
 
     def __init__(self, data=None):
