@@ -78,7 +78,7 @@ class SixPayMod(BaseEPayMod):
         'account_id': "",
         'notification_mail': "",
         'user_description': "%(event_title)s, %(user_name)s",
-        'order_description': "%(eventuser_id)s%(event_title).12s",
+        'order_identifier': "%(eventuser_id)s%(event_title).12s",
     }
 
     def __init__(self, data=None):
@@ -92,7 +92,7 @@ class SixPayMod(BaseEPayMod):
         #: description for transaction presented to registrant
         self.user_description = self.default_settings['user_description']
         #: internal description for transaction for organiser and accounting
-        self.order_description = self.default_settings['order_description']
+        self.order_identifier = self.default_settings['order_identifier']
         #: mail to send confirmations to
         self.notification_mail = self.default_settings['notification_mail']
         if data is not None:
@@ -175,10 +175,10 @@ class SixPayMod(BaseEPayMod):
         user_description %= format_map
         return user_description
 
-    def _get_order_description(self, format_map):
-        order_description = self.order_description
-        order_description %= format_map
-        return ''.join(order_description.split())
+    def _get_order_identifier(self, format_map):
+        order_identifier = self.order_identifier
+        order_identifier %= format_map
+        return ''.join(order_identifier.split())
 
     def _get_payment_url(self, prix, Currency, conf, registrant, lang, secure):
         """
@@ -198,7 +198,7 @@ class SixPayMod(BaseEPayMod):
         # description of transaction presented to user
         user_description = self._get_user_description(format_map)
         # internal description of transaction for organiser and accounting
-        order_description = self._get_order_description(format_map)
+        order_identifier = self._get_order_identifier(format_map)
         # parameters for callbacks so that indico can identify the transaction subject
         callback_params = {'target': conf, 'registrantId': registrant.getId()}
         parameters = {
@@ -208,7 +208,7 @@ class SixPayMod(BaseEPayMod):
             'AMOUNT': '%d' % (prix*100),
             'CURRENCY': Currency,
             'DESCRIPTION': user_description[:50],
-            'ORDERID': order_description[:80],
+            'ORDERID': order_identifier[:80],
             'SHOWLANGUAGES': 'yes',
             # callbacks for the service to redirect users back to indico
             'SUCCESSLINK': localUrlHandlers.UHPayTransactionSuccess.getURL(**callback_params),
@@ -326,10 +326,10 @@ class TransactionSixPay(BaseTransaction):
         return (
                 ('Service', 'SixPay'),
                 ('Date', self.date),
-                ('Order Total', '%.2f %s' % (self.amount, self.currency)),
-                ('Subject', self.subject),
-                ('Transaction ID', self.order_id),
-                ('Payment ID', self.six_id),
+                ('Amount', '%.2f %s' % (self.amount, self.currency)),
+                ('Description', self.subject),
+                ('Identifier', self.order_id),
+                ('Transaction ID', self.six_id),
             )
 
     def getTransactionHTML(self):

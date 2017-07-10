@@ -21,12 +21,12 @@ Filled by sixPay/webinterface/pages/ePayments.py:WConfModifEPaymentSixPay.getVar
         <td bgcolor="white" width="100%" class="blacktext"><pre>${ account_id }</pre></td>
     </tr>
     <tr>
-        <td class="dataCaptionTD"><span class="dataCaptionFormat">Transaction Description</span></td>
+        <td class="dataCaptionTD"><span class="dataCaptionFormat">Order Description</span></td>
         <td bgcolor="white" width="100%" class="blacktext"><pre>${ user_description }</pre></td>
     </tr>
     <tr>
-        <td class="dataCaptionTD"><span class="dataCaptionFormat">Order Description</span></td>
-        <td bgcolor="white" width="100%" class="blacktext"><pre>${ order_description }</pre></td>
+        <td class="dataCaptionTD"><span class="dataCaptionFormat">Order Identifier</span></td>
+        <td bgcolor="white" width="100%" class="blacktext"><pre>${ order_identifier }</pre></td>
     </tr>
     <tr>
         <td class="dataCaptionTD"><span class="dataCaptionFormat">Notification Mail</span></td>

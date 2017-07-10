@@ -29,18 +29,17 @@ Once enabled, the Plugin supports the following per-event settings:
 
   This ID is provided to you by Saferpay.
 
-* **Transaction Description**
-
-  The description of the transaction, identifying it in a human readable way.
-  This description is presented to the registrant during the transaction with SixPay.
-  The default description uses the registrant name and event title.
-
-  This field is limited to 50 characters, after any placeholders are filled in.
-
 * **Order Description**
 
-  The description of the transaction, identifying it for processing.
-  This description is never presented to the registrant.
+  The description of each order in a human readable way.
+  This description is presented to the registrant during the transaction with SixPay.
+
+  This field is limited to 50 characters, after any placeholders are filled in.
+  The default description uses the registrant name and event title.
+
+* **Order Identifier**
+
+  The identifier of each order for further processing.
 
   This field is stripped of whitespace and limited to 80 characters, after any placeholders are filled in.
   Note that auxiliary services, e.g. for billing, may limit this information to 12 characters.
@@ -52,7 +51,7 @@ Once enabled, the Plugin supports the following per-event settings:
 
 ### Format Placeholders
 
-The **Description** settings allow for placeholders.
+The **Order Description/Identifier** settings allow for placeholders.
 These are dynamically filled for each event and registrant.
 
 * **%(user_id)d** [`231`]
