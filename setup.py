@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='indico_sixpay',
-    version='1.2.2',
+    version='1.2.3',
     description='Indico EPayment Sub-Plugin to use SixPay services',
     url='https://github.com/maxfischer2781/indico_sixpay',
     author='Max Fischer',
@@ -10,7 +10,7 @@ setup(
     entry_points={'indico.ext': ['EPayment.sixPay = indico_sixpay', ], },
     packages=find_packages(),
     package_data={'indico_sixpay': ['tpls/*.tpl']},
-    install_requires=['requests', 'indico>=1.2'],
+    install_requires=['requests', 'indico>=1.2,<2.0'],
     license='GPLv3+',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
