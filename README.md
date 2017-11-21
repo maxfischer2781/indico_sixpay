@@ -1,86 +1,15 @@
-# Indico EPayment plugin for SIX Payment Services
+# Indico 2 EPayment plugin for SIX Payment Services
 
-Plugin for Indico EPayment, enabling support for SIX Payment service.
+Plugin for the Indico 2 event/conference management system, enabling support for SIX Payment service.
 This enables EPayment using the SIX Payment Service in conferences and other events.
+
+*This is a prerelease for Indico 2.0.*
+*The legacy plugin for Indico 1.2 is [hosted on github](https://github.com/maxfischer2781/indico_sixpay/tree/indico-1.2).*
 
 ## EPayment Configuration Settings
 
-The Plugin can be activated and configured for each event.
-This is done in the `Mod of Payments` section of `Management Area` -> `Registration` -> `e-payment`.
-Once enabled, the Plugin supports the following per-event settings:
-
-* **Title**
-
-  Name of the service presented to users when selecting a payment provider.
-
-* **SixPay Saferpay URL**
-
-  The URL to contact the Six Payment Service.
-  Use the default `https://www.saferpay.com/hosting` for any transaction.
-  For testing, use the `https://test.saferpay.com/hosting` test service.
-
-  You should generally not change this other than for testing.
-  If the official saferpay URL changes, please submit a [ticket](https://github.com/maxfischer2781/indico_sixpay/pulls).
-  
-* **Account ID**
-
-  The ID of your Saferpay account.
-  For testing, use the ID `401860-17795278`.
-
-  This ID is provided to you by Saferpay.
-
-* **Order Description**
-
-  The description of each order in a human readable way.
-  This description is presented to the registrant during the transaction with SixPay.
-
-  This field is limited to 50 characters, after any placeholders are filled in.
-  The default description uses the registrant name and event title.
-
-* **Order Identifier**
-
-  The identifier of each order for further processing.
-
-  This field is stripped of whitespace and limited to 80 characters, after any placeholders are filled in.
-  Note that auxiliary services, e.g. for billing, may limit this information to 12 characters.
-
-* **Notification Mail**
-
-  Mail address to receive notifications of transactions.
-  This is independent of Indico's own payment notifications.
 
 ### Format Placeholders
-
-The **Order Description/Identifier** settings allow for placeholders.
-These are dynamically filled for each event and registrant.
-
-* **%(user_id)d** [`231`]
-
-  Numerical identifier of the user/registrant, unique per event.
-
-* **%(user_name)s** [`Jane Doe`]
-
-  Full name of the user/registrant.
-
-* **%(user_firstname)s** [`Jane`]
-
-  First name of the user/registrant.
-
-* **%(user_lastname)s** [`Doe`]
-
-  Last name of the user/registrant.
-
-* **%(event_id)d** [`18`]
-
-  Numerical identifier of the event.
-
-* **%(event_title)s** [`My Conference`]
-
-  Full title of the event.
-
-* **%(eventuser_id)s** [`c18r231`]
-
-  A globally unique identifier for both the event and user.
 
 Placeholders use the [String Formatting](https://docs.python.org/2/library/stdtypes.html#string-formatting) rules of python.
 For example, the placeholder `%(event_title).6s` is replaced with the first six characters of the event title.
@@ -88,7 +17,7 @@ For example, the placeholder `%(event_title).6s` is replaced with the first six 
 ## Installation
 
 The plugin can be installed using standard Python package managers.
-Note that at least `indico` 1.2 is required, and will be installed if it is missing.
+Note that at least `indico` 2.0 is required, and will be installed if it is missing.
 
 **Note**: The `indico_sixpay` plugin must be installed for the python version running `indico`.
 
@@ -119,15 +48,9 @@ If you encounter any bugs or missing features, please use the [bug tracker](http
 
 ### Changelog
 
-* **v1.2.2**
+* **v2.0pre**
 
-    * Internal description of payments is configurable.
-
-    * Added additional formatting placeholders for payment descriptions.
-
-* **v1.2.1**
-
-    Initial release
+    * This is a pre-release of a draft/test version. Any features, interfaces and capabilities are subject to changes.
 
 ## Disclaimer
 
