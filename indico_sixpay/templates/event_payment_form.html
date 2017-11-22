@@ -1,0 +1,21 @@
+Clicking on the <strong>Pay now</strong> button you will get redirected to the SixPay site in order to complete your transaction.
+
+<dl class="i-data-list">
+    <dt>{% trans %}First name{% endtrans %}</dt>
+    <dd>{{ registration.first_name }}</dd>
+    <dt>{% trans %}Last name{% endtrans %}</dt>
+    <dd>{{ registration.last_name }}</dd>
+    <dt>{% trans %}Total amount{% endtrans %}</dt>
+    <dd>{{ format_currency(amount, currency, locale=session.lang) }}</dd>
+    <dt></dt>
+    <dd>
+        <form action="{{ payment_url }}" method="POST">
+            <input
+                type="image"
+                name="submit"
+                src="https://www.paypalobjects.com/webstatic/en_US/btn/btn_paynow_86x21.png"
+                alt="PayPal - The safer, easier way to pay online"
+            >
+        </form>
+    </dd>
+</dl>
