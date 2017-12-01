@@ -148,6 +148,8 @@ class FieldFormatMap(object):
     extractors = {
         'user_id': lambda registration: registration.user_id,
         'user_name': lambda registration: registration.full_name,
+        'user_firstname': lambda registration: registration.first_name,
+        'user_lastname': lambda registration: registration.last_name,
         'event_id': lambda registration: registration.event_id,
         'event_title': lambda registration: registration.event.title,
         'eventuser_id': lambda registration: 'e{0}u{1}'.format(registration.event_id, registration.user_id),
