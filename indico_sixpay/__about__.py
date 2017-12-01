@@ -1,5 +1,5 @@
 __title__ = 'indico_sixpay'
-__summary__ = 'Indico plugin for SIX EPayment'
+__summary__ = 'Indico EPayment Plugin for SixPay services'
 __url__ = 'https://github.com/maxfischer2781/indico_sixpay'
 
 __version__ = '2.0.0pre'
