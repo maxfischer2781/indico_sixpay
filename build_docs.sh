@@ -11,6 +11,7 @@ touch source/api/dummy
 rm source/api/*
 if which plantuml >/dev/null
 then
+    echo "Building UML images..."
     touch source/images/uml/dummy
     rm source/images/uml/*
     plantuml -tsvg -o ../images/uml/ source/uml/*.uml
