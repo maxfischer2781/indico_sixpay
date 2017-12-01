@@ -32,7 +32,7 @@ Note that a valid account with *SIX Payment Services* is required to receive pay
 The plugin follows the **Saferpay Payment Page** specification version ``5.1``.
 
 *This is a prerelease for Indico 2.0.*
-*The legacy plugin for Indico 1.2 is `hosted on github <https://github.com/maxfischer2781/indico_sixpay/tree/indico-1.2>`_.*
+*The legacy plugin for Indico 1.2 is hosted on* `github <https://github.com/maxfischer2781/indico_sixpay/tree/indico-1.2>`_.
 
 Usage Overview
 --------------
