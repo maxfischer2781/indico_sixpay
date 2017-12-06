@@ -29,7 +29,9 @@ The plugin must be installed for an entire Indico instance.
 It can be enabled and configured for the entire instance and per individual event.
 Note that a valid account with *SIX Payment Services* is required to receive payments.
 
-The plugin follows the **Saferpay Payment Page** specification version ``5.1``.
+The plugin follows the
+`**Saferpay Payment Page** <https://www.six-payment-services.com/dam/classic/saferpay/Saferpay_Payment_Page_EN.pdf>`_
+specification version ``5.1``.
 
 *This is a prerelease for Indico 2.0.*
 *The legacy plugin for Indico 1.2 is hosted on* `github <https://github.com/maxfischer2781/indico_sixpay/tree/indico-1.2>`_.
