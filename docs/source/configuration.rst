@@ -12,8 +12,8 @@ Configuration Options
 **SixPay Saferpay URL**
 
     The URL to contact the Six Payment Service.
-    Use the default https://www.saferpay.com/hosting for any transaction.
-    For testing, use the https://test.saferpay.com/hosting test service.
+    Use the default ``https://www.saferpay.com/hosting`` for any transaction.
+    For testing, use the ``https://test.saferpay.com/hosting`` test service.
 
     You should generally *not* change this, unless you want to test the plugin.
     If the official saferpay URL changes, please submit an `issue ticket`_.
@@ -21,9 +21,9 @@ Configuration Options
 **Account ID**
 
   The ID of your Saferpay account, a number containing slashes.
-  For testing, use the ID `401860-17795278`.
+  For testing, use the ID ``401860-17795278``.
 
-  This ID is provided to you by Saferpay.
+  This ID is provided to you by Six Payment Services.
 
 **Order Description**
 

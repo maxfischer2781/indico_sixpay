@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of the SixPay Indico EPayment Plugin.
-## Copyright (C) 2017 Max Fischer
+## Copyright (C) 2017 - 2018 Max Fischer
 ##
 ## This is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -16,10 +16,8 @@
 ## You should have received a copy of the GNU General Public License
 ## along with SixPay Indico EPayment Plugin;if not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
-
 import urlparse
 from xml.dom.minidom import parseString
-from werkzeug.exceptions import NotImplemented as HTTPNotImplemented, InternalServerError as HTTPInternalServerError
 
 import requests
 from flask import flash, redirect, request
@@ -27,13 +25,16 @@ from flask_pluginengine import current_plugin
 from werkzeug.exceptions import BadRequest
 
 from indico.modules.events.payment.models.transactions import TransactionAction
-from indico.modules.events.payment.notifications import notify_amount_inconsistency
 from indico.modules.events.payment.util import register_transaction
 from indico.modules.events.registration.models.registrations import Registration
 from indico.web.flask.util import url_for
 from indico.web.rh import RH
 
 from .utility import gettext
+
+# RH from indico.web.rh
+# - the logic to execute when SixPay/Users are redirected *after* a transaction
+# - see blueprint.py for how RH's are mounted!
 
 
 class BaseRequestHandler(RH):
@@ -54,15 +55,67 @@ class BaseRequestHandler(RH):
             raise BadRequest
 
 
+class TransactionFailure(Exception):
+    """A Transaction with SixPay failed"""
+    def __init__(self, step, details=None):
+        self.step = step
+        self.details = details
+
+
 class SixPayResponseHandler(BaseRequestHandler):
     """Handler for notification from SixPay service"""
     def _process(self):
+        try:
+            self._process_confirmation()
+        except TransactionFailure as err:
+            current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
+
+    def _process_confirmation(self):
+        """Process the confirmation response inside indico"""
+        # DATA: '<IDP
+        #           MSGTYPE="PayConfirm" TOKEN="(unused)" VTVERIFY="(obsolete)" KEYID="1-0"
+        #           ID="9SUO5zbOGY6OUA45b222bhvrpW2A"
+        #           ACCOUNTID="401860-17795278"
+        #           PROVIDERID="90"
+        #           PROVIDERNAME="Saferpay Test Card"
+        #           PAYMENTMETHOD="6"
+        #           ORDERID="c281r4"
+        #           AMOUNT="100"
+        #           CURRENCY="EUR"
+        #           IP="141.3.200.120"
+        #           IPCOUNTRY="DE"
+        #           CCCOUNTRY="US"
+        #           MPI_LIABILITYSHIFT="yes"
+        #           MPI_TX_CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA="
+        #           MPI_XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI="
+        #           ECI="1"
+        #           CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA="
+        #           XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI=" />'
         transaction_xml = request.form['DATA']
         transaction_signature = request.form['SIGNATURE']
         transaction_data = self._parse_transaction_xml(transaction_xml)
-        if self._verify_signature(transaction_xml, transaction_signature, transaction_data['ID']):
-            pass
+        # verify the signature of SixPay for the transaction
+        # if this matches, the user completed the transaction as requested by Indico
+        try:
+            self._verify_signature(transaction_xml, transaction_signature, transaction_data['ID'])
+            if self._is_duplicate_transaction(transaction_data=transaction_data):
+                # we have already handled the transaction
+                return True
+            if self._confirm_transaction(transaction_data):
+                self._register_transaction(transaction_data)
+        except TransactionFailure as err:
+            current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
+            raise
+        return True
 
+    @staticmethod
+    def _perform_request(task, endpoint, **data):
+        request_url = urlparse.urljoin(current_plugin.settings.get('url'), endpoint)
+        response = requests.post(request_url, data)
+        response.raise_for_status()
+        if response.text.startswith('ERROR'):
+            raise TransactionFailure(step=task, details=response.text)
+        return response.text
 
     @staticmethod
     def _parse_transaction_xml(transaction_xml):
@@ -75,48 +128,75 @@ class SixPayResponseHandler(BaseRequestHandler):
         }
         return idp_data
 
-    @staticmethod
-    def _verify_signature(transaction_xml, transaction_signature, transaction_id):
+    def _verify_signature(self, transaction_xml, transaction_signature, transaction_id):
         """Verify the transaction data and signature with SixPay"""
-        sixpay_url = current_plugin.settings.get('url')
-        endpoint = urlparse.urljoin(sixpay_url, 'CreatePayInit.asp')
-        url_request = requests.post(endpoint, DATA=transaction_xml, SIGNATURE=transaction_signature)
-        # raise any HTTP errors
-        url_request.raise_for_status()
-        if url_request.text.startswith('ERROR'):
-            raise HTTPInternalServerError('Failed request to SixPay service: %s' % url_request.text)
-        elif url_request.text.startswith('OK'):
+        verification_response = self._perform_request(
+            'verification', 'VerifyPayConfirm.asp',
+            DATA=transaction_xml, SIGNATURE=transaction_signature
+        )
+        if verification_response.startswith('OK'):
             # text = 'OK:ID=56a77rg243asfhmkq3r&TOKEN=%3e235462FA23C4FE4AF65'
-            content = url_request.text.split(':', 1)[1]
+            content = verification_response.split(':', 1)[1]
             confirmation = dict(key_value.split('=') for key_value in content.split('&'))
-            return confirmation['ID'] == transaction_id
-        raise RuntimeError("Expected reply 'OK:ID=...&TOKEN=...', got %r" % url_request.text)
+            if not confirmation['ID'] == transaction_id:
+                raise TransactionFailure(step='verification', details='mismatched transaction ID')
+            return True
+        raise RuntimeError("Expected reply 'OK:ID=...&TOKEN=...', got %r" % verification_response.text)
 
-    def _check_duplicate_transaction(self, transaction_data):
+    def _is_duplicate_transaction(self, transaction_data):
+        """Check if this transaction has already been recorded"""
         prev_transaction = self.registration.transaction
-        if not prev_transaction or prev_transaction.provier != 'sixpay':
+        if not prev_transaction or prev_transaction.provider != 'sixpay':
             return False
         return all(
-            prev_transaction[key] == transaction_data[key]
-            for key in ()
+            prev_transaction.data.get(key) == transaction_data.get(key)
+            for key in ('ORDERID', 'CURRENCY', 'AMOUNT', 'ACCOUNTID')
         )
+
+    def _confirm_transaction(self, transaction_data):
+        """Confirm that the transaction is valid to SixPay"""
+        completion_data = {'ACCOUNTID': transaction_data['ACCOUNTID'], 'ID': transaction_data['ID']}
+        if 'test.saferpay.com' in current_plugin.settings.get('url'):
+            # password: see "Saferpay Payment Page" specification, v5.1, section 4.6
+            completion_data['spPassword'] = '8e7Yn5yk'
+        completion_response = self._perform_request('confirmation', 'PayCompleteV2.asp', **completion_data)
+        assert completion_response.startswith('OK')
+
+    def _register_transaction(self, transaction_data):
+        """Register the transaction persistently for Indico"""
+        register_transaction(
+            registration=self.registration,
+            # SixPay uses SMALLEST currency, Indico expects LARGEST currency
+            amount=(float(transaction_data['AMOUNT']) / 100.0),
+            currency=transaction_data['CURRENCY'],
+            action=TransactionAction.complete,
+            provider='sixpay',
+            data=transaction_data,
+        )
+
 
 class UserCancelHandler(BaseRequestHandler):
     """User Message on cancelled payment"""
     def _process(self):
-        flash(_('You cancelled the payment process.'), 'info')
+        flash(gettext('You cancelled the payment.'), 'info')
         return redirect(url_for('event_registration.display_regform', self.registration.locator.registrant))
 
 
 class UserFailureHandler(BaseRequestHandler):
     """User Message on failed payment"""
     def _process(self):
-        flash(_('Your payment request has failed.'), 'info')
+        flash(gettext('Your payment has failed.'), 'info')
         return redirect(url_for('event_registration.display_regform', self.registration.locator.registrant))
 
 
 class UserSuccessHandler(SixPayResponseHandler):
     """User Message on successful payment"""
     def _process(self):
-        flash(gettext('Your payment request has been processed.'), 'success')
+        try:
+            self._process_confirmation()
+        except TransactionFailure as err:
+            current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
+            flash(gettext('Your payment has failed. Please contact an organizer.'), 'info')
+        else:
+            flash(gettext('Your payment has been confirmed.'), 'success')
         return redirect(url_for('event_registration.display_regform', self.registration.locator.registrant))

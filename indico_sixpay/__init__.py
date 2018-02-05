@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of the SixPay Indico EPayment Plugin.
-## Copyright (C) 2017 Max Fischer
+## Copyright (C) 2017 - 2018 Max Fischer
 ##
 ## This is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -14,14 +14,4 @@
 ## General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with Indico;if not, see <http://www.gnu.org/licenses/>.
-from __future__ import print_function
-
-__metadata__ = {
-    'type': "EPayment",
-    'name': "SixPay"
-    }
-
-MODULE_ID = 'SixPay'
-
-modules = {}
+## along with SixPay Indico EPayment Plugin;if not, see <http://www.gnu.org/licenses/>.

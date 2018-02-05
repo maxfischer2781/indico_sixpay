@@ -17,7 +17,18 @@
 ## along with SixPay Indico EPayment Plugin;if not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-from indico.util.i18n import make_bound_gettext
+from indico.core.plugins import IndicoPluginBlueprint
 
-#: internationalisation/localisation of strings
-gettext = make_bound_gettext('payment_sixpay')
+from .request_handlers import SixPayResponseHandler, UserCancelHandler, UserFailureHandler, UserSuccessHandler
+
+
+blueprint = IndicoPluginBlueprint(
+    'payment_sixpay', __name__,
+    url_prefix='/event/<confId>/registrations/<int:reg_form_id>/payment/response/sixpay'
+)
+
+blueprint.add_url_rule('/failure', 'failure', UserCancelHandler, methods=('GET', 'POST'))
+blueprint.add_url_rule('/cancel', 'cancel', UserFailureHandler, methods=('GET', 'POST'))
+blueprint.add_url_rule('/success', 'success', UserSuccessHandler, methods=('GET', 'POST'))
+# Used by SixPay to send an asynchronous notification for the transaction
+blueprint.add_url_rule('/ipn', 'notify', SixPayResponseHandler, methods=('Get', 'POST'))

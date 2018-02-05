@@ -5,4 +5,4 @@ __url__ = 'https://github.com/maxfischer2781/indico_sixpay'
 __version__ = '2.0.0pre'
 __author__ = 'Max Fischer'
 __email__ = 'maxfischer2781@gmail.com'
-__copyright__ = '2017 %s' % __author__
+__copyright__ = '2017 - 2018 %s' % __author__

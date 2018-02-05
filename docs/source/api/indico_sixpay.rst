@@ -11,6 +11,8 @@ Submodules
 
 .. toctree::
 
+   indico_sixpay.blueprint
    indico_sixpay.plugin
+   indico_sixpay.request_handlers
    indico_sixpay.utility
 

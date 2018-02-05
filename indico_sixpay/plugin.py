@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of the SixPay Indico EPayment Plugin.
-## Copyright (C) 2017 Max Fischer
+## Copyright (C) 2017 - 2018 Max Fischer
 ##
 ## This is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -26,11 +26,12 @@ from wtforms.fields.html5 import URLField
 from wtforms.validators import DataRequired, Optional, Regexp, Length, Email, ValidationError
 
 from indico.core.plugins import IndicoPlugin, url_for_plugin
-from indico.modules.events.payment import (PaymentEventSettingsFormBase, PaymentPluginMixin,
-                                           PaymentPluginSettingsFormBase)
+from indico.modules.events.payment import \
+    PaymentEventSettingsFormBase, PaymentPluginMixin, PaymentPluginSettingsFormBase
 
 from .utility import gettext
-from indico_payment_paypal.blueprint import blueprint
+# blueprint mounts the request handlers onto URLs
+from .blueprint import blueprint
 
 
 # Dear Future Maintainer,
@@ -47,7 +48,7 @@ from indico_payment_paypal.blueprint import blueprint
 
 # PaymentPluginSettingsFormBase from indico.modules.events.payment
 # - A codified Form for users to fill in. The *class attributes* define
-#   which fields exits, their shape, description, etc.
+#   which fields exist, their shape, description, etc.
 # - Each field is a type from wtforms.fields.core.Field. You probably want to have:
 #   - label: Name of the field, an internationalised identifier
 #   - validators: Input validation, see wtforms.validators
@@ -78,7 +79,7 @@ class FormatField(object):
     def __init__(self, max_length=float('inf'), field_map=None):
         self.max_length = max_length
         self.field_map = self.default_field_map.copy()
-        if field_map:
+        if field_map is not None:
             self.field_map.update(field_map)
 
     def __call__(self, form, field):
@@ -178,7 +179,7 @@ class FieldFormatMap(object):
 # All the business logic is in `def adjust_payment_form_data`
 class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     """
-    SixPay Test DO NOT USE
+    SixPay Saferpay
 
     Provides an EPayment method using the SixPay Saferpay API.
     """
@@ -220,11 +221,11 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         transaction = self._get_transaction_parameters(data)
         # callbacks of the transaction - where to announce success, failure, ...
         # where to redirect the user
-        transaction['SUCCESSLINK'] = url_for_plugin('payment_paypal.success', registration.locator.uuid, _external=True)
-        transaction['BACKLINK'] = url_for_plugin('payment_paypal.cancel', registration.locator.uuid, _external=True)
-        transaction['FAILLINK'] = url_for_plugin('payment_paypal.failure', registration.locator.uuid, _external=True)
-        # where to asynchronously
-        transaction['NOTIFYURL'] = url_for_plugin('payment_paypal.notify', registration.locator.uuid, _external=True)
+        transaction['SUCCESSLINK'] = url_for_plugin('payment_sixpay.success', registration.locator.uuid, _external=True)
+        transaction['BACKLINK'] = url_for_plugin('payment_sixpay.cancel', registration.locator.uuid, _external=True)
+        transaction['FAILLINK'] = url_for_plugin('payment_sixpay.failure', registration.locator.uuid, _external=True)
+        # where to asynchronously call back from SixPay
+        transaction['NOTIFYURL'] = url_for_plugin('payment_sixpay.notify', registration.locator.uuid, _external=True)
         data['payment_url'] = self._get_payment_url(sixpay_url=plugin_settings.url, transaction_data=transaction)
         return data
 
