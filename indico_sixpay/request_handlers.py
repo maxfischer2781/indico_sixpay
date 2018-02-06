@@ -25,12 +25,13 @@ from flask_pluginengine import current_plugin
 from werkzeug.exceptions import BadRequest
 
 from indico.modules.events.payment.models.transactions import TransactionAction
+from indico.modules.events.payment.notifications import notify_amount_inconsistency
 from indico.modules.events.payment.util import register_transaction
 from indico.modules.events.registration.models.registrations import Registration
 from indico.web.flask.util import url_for
 from indico.web.rh import RH
 
-from .utility import gettext
+from .utility import gettext, to_large_currency, to_small_currency
 
 # RH from indico.web.rh
 # - the logic to execute when SixPay/Users are redirected *after* a transaction
@@ -102,6 +103,7 @@ class SixPayResponseHandler(BaseRequestHandler):
                 # we have already handled the transaction
                 return True
             if self._confirm_transaction(transaction_data):
+                self._verify_amount(transaction_data)
                 self._register_transaction(transaction_data)
         except TransactionFailure as err:
             current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
@@ -153,6 +155,21 @@ class SixPayResponseHandler(BaseRequestHandler):
             for key in ('ORDERID', 'CURRENCY', 'AMOUNT', 'ACCOUNTID')
         )
 
+    def _verify_amount(self, transaction_data):
+        """Verify the amount and currency of the payment; sends an email but still registers incorrect payments"""
+        expected_amount = self.registration.price
+        expected_currency = self.registration.currency
+        amount = transaction_data['AMOUNT']
+        currency = transaction_data['CURRENCY']
+        if to_small_currency(expected_amount, expected_currency) == amount and expected_currency == currency:
+            return True
+        current_plugin.logger.warning(
+            "Payment doesn't match events fee: %s %s != %s %s",
+            amount, currency, to_small_currency(expected_amount, expected_currency), expected_currency
+        )
+        notify_amount_inconsistency(self.registration, to_large_currency(amount, currency), currency)
+        return False
+
     def _confirm_transaction(self, transaction_data):
         """Confirm that the transaction is valid to SixPay"""
         completion_data = {'ACCOUNTID': transaction_data['ACCOUNTID'], 'ID': transaction_data['ID']}
@@ -167,7 +184,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         register_transaction(
             registration=self.registration,
             # SixPay uses SMALLEST currency, Indico expects LARGEST currency
-            amount=(float(transaction_data['AMOUNT']) / 100.0),
+            amount=to_large_currency(transaction_data['AMOUNT'], transaction_data['CURRENCY']),
             currency=transaction_data['CURRENCY'],
             action=TransactionAction.complete,
             provider='sixpay',
@@ -196,7 +213,7 @@ class UserSuccessHandler(SixPayResponseHandler):
             self._process_confirmation()
         except TransactionFailure as err:
             current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
-            flash(gettext('Your payment has failed. Please contact an organizer.'), 'info')
+            flash(gettext('Your payment could not be confirmed. Please contact an organizer.'), 'info')
         else:
             flash(gettext('Your payment has been confirmed.'), 'success')
         return redirect(url_for('event_registration.display_regform', self.registration.locator.registrant))

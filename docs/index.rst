@@ -2,7 +2,7 @@
 ==================================================
 
 .. image:: https://readthedocs.org/projects/indico_sixpay/badge/?version=latest
-    :target: http://indico_sixpay.readthedocs.io/en/latest/?badge=latest
+    :target: http://indico-sixpay.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 .. toctree::
@@ -48,6 +48,12 @@ To enable the plugin, it must be installed for the python version running ``indi
 
 Once installed, it can be enabled in the administrator and event settings.
 Configuration uses the same options for global defaults and event specific overrides.
+
+Usage Notes
+-----------
+
+The plugin relies on the ISO 4217 standard for currency conversions.
+Since they are not properly covered by the standard, the currencies ``MGA`` and ``MRU`` cannot be used for payments.
 
 Contributing and Feedback
 -------------------------

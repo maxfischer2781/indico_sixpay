@@ -29,7 +29,7 @@ from indico.core.plugins import IndicoPlugin, url_for_plugin
 from indico.modules.events.payment import \
     PaymentEventSettingsFormBase, PaymentPluginMixin, PaymentPluginSettingsFormBase
 
-from .utility import gettext
+from .utility import gettext, to_small_currency
 # blueprint mounts the request handlers onto URLs
 from .blueprint import blueprint
 
@@ -253,7 +253,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
             'ACCOUNTID': str(plugin_settings.account_id),
             # indico handles price as largest currency, but six expects smallest
             # e.g. EUR: indico uses 100.2 Euro, but six expects 10020 Cent
-            'AMOUNT': '{:.0f}'.format(100 * payment_data['amount']),
+            'AMOUNT': '{:.0f}'.format(to_small_currency(payment_data['amount'], payment_data['currency'])),
             'CURRENCY': payment_data['currency'],
             'DESCRIPTION': payment_data['order_description'][:50],
             'ORDERID': payment_data['order_identifier'][:80],

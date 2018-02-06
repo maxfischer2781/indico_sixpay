@@ -3,6 +3,8 @@
 Plugin for the Indico 2 event/conference management system, enabling support for SIX Payment Service.
 This enables EPayment for users via the SixPay Saferpay Payment Page in conferences and other events.
 
+Please see the [documentation](http://indico-sixpay.readthedocs.io/en/latest/) for details on installation, usage and maintenance.
+
 ## Overview
 
 If the plugin is enabled, event participants can select the ``SixPay`` payment method during the EPayment checkout.
@@ -11,14 +13,6 @@ The plugin handles the user interaction inside Indico, and the secure, asynchron
 
 *This is a prerelease for Indico 2.0.*
 *The legacy plugin for Indico 1.2 is [hosted on github](https://github.com/maxfischer2781/indico_sixpay/tree/indico-1.2).*
-
-## EPayment Configuration Settings
-
-
-### Format Placeholders
-
-Placeholders use the [String Formatting](https://docs.python.org/2/library/stdtypes.html#string-formatting) rules of python.
-For example, the placeholder `%(event_title).6s` is replaced with the first six characters of the event title.
 
 ## Installation
 
@@ -46,13 +40,6 @@ Install it by running:
     python setup.py install
 
 After reloading the EPayment plugin in the Indico Admin panel, you can enable the SixPay service.
-
-### Dependencies
-
-The following dependencies are automatically installed if not present:
-
-* ``indico>=2.0`` The Indico event management system into which the plugin hooks
-* ``requests`` A HTTP requet library used to communicate with SixPay
 
 ## Contributing, Feedback and Bug Reports
 

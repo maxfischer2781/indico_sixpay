@@ -84,7 +84,7 @@ These are dynamically filled for each event and registrant.
   A globally unique identifier for both the event and user.
 
 Placeholders use the `Format String Syntax`_ of Python.
-For example, `{event_title:.6}` is replaced with the first six characters of the event title.
+For example, ``{event_title:.6}`` is replaced with the first six characters of the event title.
 
 Note that both fields taking placeholders have a maximum size.
 Since a template cannot be validated exactly, size validation assumes a reasonable but short input.

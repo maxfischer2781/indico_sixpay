@@ -30,7 +30,7 @@ setup(
     },
     packages=find_packages(),
     package_data={'indico_sixpay': ['tpls/*.tpl']},
-    install_requires=['requests', 'indico>=2.0rc1'],
+    install_requires=['requests', 'indico>=2.0rc1', 'iso4217'],
     license='GPLv3+',
     classifiers=[
         'Development Status :: 3 - Alpha',

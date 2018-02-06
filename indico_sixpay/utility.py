@@ -15,9 +15,47 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with SixPay Indico EPayment Plugin;if not, see <http://www.gnu.org/licenses/>.
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
+
+import iso4217
+from werkzeug.exceptions import NotImplemented as HTTPNotImplemented
 
 from indico.util.i18n import make_bound_gettext
 
 #: internationalisation/localisation of strings
 gettext = make_bound_gettext('payment_sixpay')
+
+
+NON_DECIMAL_CURRENCY = {'MRU', 'MGA'}
+
+
+def validate_currency(iso_code):
+    """Check whether the currency can be properly handled by this plugin"""
+    if iso_code in NON_DECIMAL_CURRENCY:
+        raise HTTPNotImplemented(
+            gettext("Unsupported currency '{0}' for SixPay. Please contact the organisers").format(iso_code)
+        )
+
+
+def to_small_currency(large_currency_amount, iso_code):
+    """
+    Convert from an amount from large currency to small currency, e.g. 2.3 Euro to 230 Eurocent
+
+    :param large_currency_amount: the amount in large currency, e.g. ``2.3``
+    :param iso_code: the ISO currency code, e.g. ``EUR``
+    :return: the amount in small currency, e.g. ``230``
+    """
+    validate_currency(iso_code)
+    exponent = iso4217.Currency(iso_code).exponent
+    if exponent == 0:
+        return large_currency_amount
+    return large_currency_amount * (10 ** exponent)
+
+
+def to_large_currency(small_currency_amount, iso_code):
+    """Reverse of :py:func:`to_small_currency`"""
+    validate_currency(iso_code)
+    exponent = iso4217.Currency(iso_code).exponent
+    if exponent == 0:
+        return small_currency_amount
+    return small_currency_amount / (10 ** exponent)
