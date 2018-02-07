@@ -254,7 +254,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
                 )
         # see the SixPay Manual on what these things mean
         transaction_parameters = {
-            'ACCOUNTID': str(plugin_settings.account_id),
+            'ACCOUNTID': str(plugin_settings.get('account_id')),
             # indico handles price as largest currency, but six expects smallest
             # e.g. EUR: indico uses 100.2 Euro, but six expects 10020 Cent
             'AMOUNT': '{:.0f}'.format(to_small_currency(payment_data['amount'], payment_data['currency'])),
@@ -263,8 +263,8 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
             'ORDERID': payment_data['order_identifier'][:80],
             'SHOWLANGUAGES': 'yes',
         }
-        if plugin_settings.notification_mail:
-            transaction_parameters['NOTIFYADDRESS'] = plugin_settings.notification_mail
+        if plugin_settings.get('notification_mail'):
+            transaction_parameters['NOTIFYADDRESS'] = plugin_settings.get('notification_mail')
         return transaction_parameters
 
     def _get_payment_url(self, sixpay_url, transaction_data):
