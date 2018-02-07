@@ -103,8 +103,8 @@ class SixPayResponseHandler(BaseRequestHandler):
                 # we have already handled the transaction
                 return True
             if self._confirm_transaction(transaction_data):
-                self._verify_amount(transaction_data)
-                self._register_transaction(transaction_data)
+                if self._verify_amount(transaction_data):
+                    self._register_transaction(transaction_data)
         except TransactionFailure as err:
             current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
             raise
