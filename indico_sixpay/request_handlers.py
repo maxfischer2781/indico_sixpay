@@ -72,6 +72,7 @@ class SixPayResponseHandler(BaseRequestHandler):
             current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
 
     def _process_confirmation(self):
+        print('DEBUG-------ENTER _process_confirmation -----\n')
         """Process the confirmation response inside indico"""
         # DATA: '<IDP
         #           MSGTYPE="PayConfirm" TOKEN="(unused)" VTVERIFY="(obsolete)" KEYID="1-0"
@@ -100,9 +101,11 @@ class SixPayResponseHandler(BaseRequestHandler):
         try:
             self._verify_signature(transaction_xml, transaction_signature, transaction_data['ID'])
             if self._is_duplicate_transaction(transaction_data=transaction_data):
+                print('DEBUG-------TRANSACTION IS DUPLICATE-----\n')
                 # we have already handled the transaction
                 return True
             if self._confirm_transaction(transaction_data):
+                print('DEBUG-------TRANSACTION CONFIRMED -----\n')
                 self._verify_amount(transaction_data)
                 self._register_transaction(transaction_data)
         except TransactionFailure as err:
@@ -181,6 +184,7 @@ class SixPayResponseHandler(BaseRequestHandler):
 
     def _register_transaction(self, transaction_data):
         """Register the transaction persistently for Indico"""
+        print('DEBUG-------ENTER _register_transaction -----\n')
         register_transaction(
             registration=self.registration,
             # SixPay uses SMALLEST currency, Indico expects LARGEST currency
