@@ -228,7 +228,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         transaction['FAILLINK'] = url_for_plugin('payment_sixpay.failure', registration.locator.uuid, _external=True)
         # where to asynchronously call back from SixPay
         transaction['NOTIFYURL'] = url_for_plugin('payment_sixpay.notify', registration.locator.uuid, _external=True)
-        data['payment_url'] = self._get_payment_url(sixpay_url=plugin_settings.url, transaction_data=transaction)
+        data['payment_url'] = self._get_payment_url(sixpay_url=plugin_settings.get('url'), transaction_data=transaction)
         return data
 
     def _get_transaction_parameters(self, payment_data):
