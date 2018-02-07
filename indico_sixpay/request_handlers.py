@@ -160,11 +160,13 @@ class SixPayResponseHandler(BaseRequestHandler):
         )
 
     def _verify_amount(self, transaction_data):
+        print('DEBUG-------ENTER _verify_amount -----\n')
         """Verify the amount and currency of the payment; sends an email but still registers incorrect payments"""
         expected_amount = self.registration.price
         expected_currency = self.registration.currency
         amount = transaction_data['AMOUNT']
         currency = transaction_data['CURRENCY']
+        print('DEBUG-- Expected: %s %s; Got: %s %s\n') % (expected_amount, expected_currency, amount, currency)
         if to_small_currency(expected_amount, expected_currency) == amount and expected_currency == currency:
             return True
         current_plugin.logger.warning(
