@@ -244,7 +244,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
                         gettext(message) + '\n\n[' + message + ']'
                     ).format(self.name)
                  )
-            except KeyError:
+            except (KeyError, AttributeError):
                 message = "Unknown format field placeholder '{0}' for {1}, please contact the event organisers!"
                 raise HTTPNotImplemented((
                         gettext(message) + '\n\n[' + message + ']'
