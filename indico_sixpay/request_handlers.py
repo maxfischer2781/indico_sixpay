@@ -175,6 +175,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         return False
 
     def _confirm_transaction(self, transaction_data):
+        print('DEBUG-------ENTER _confirm_transaction -----\n')
         """Confirm that the transaction is valid to SixPay"""
         completion_data = {'ACCOUNTID': transaction_data['ACCOUNTID'], 'ID': transaction_data['ID']}
         if 'test.saferpay.com' in current_plugin.settings.get('url'):
@@ -182,6 +183,7 @@ class SixPayResponseHandler(BaseRequestHandler):
             completion_data['spPassword'] = '8e7Yn5yk'
         completion_response = self._perform_request('confirmation', 'PayCompleteV2.asp', **completion_data)
         assert completion_response.startswith('OK')
+        return True
 
     def _register_transaction(self, transaction_data):
         """Register the transaction persistently for Indico"""
