@@ -92,8 +92,8 @@ class SixPayResponseHandler(BaseRequestHandler):
         #           ECI="1"
         #           CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA="
         #           XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI=" />'
-        transaction_xml = request.form['DATA']
-        transaction_signature = request.form['SIGNATURE']
+        transaction_xml = request.args['DATA']
+        transaction_signature = request.args['SIGNATURE']
         transaction_data = self._parse_transaction_xml(transaction_xml)
         # verify the signature of SixPay for the transaction
         # if this matches, the user completed the transaction as requested by Indico
