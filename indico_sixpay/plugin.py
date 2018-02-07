@@ -189,6 +189,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     default_settings = {
         'method_name': 'SixPay',
         'url': 'https://www.saferpay.com/hosting',
+        'account_id': None,
         'order_description': '%(event_title)s, %(user_name)s',
         'order_identifier': '%(eventuser_id)s',
         'notification_mail': None,
@@ -197,6 +198,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         'enabled': False,
         'method_name': None,
         'url': None,
+        'account_id': None,
         'order_description': None,
         'order_identifier': None,
         'notification_mail': None,
