@@ -270,9 +270,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     def _get_payment_url(self, sixpay_url, transaction_data):
         """Send transaction data to SixPay to get a signed URL for the user request"""
         endpoint = urlparse.urljoin(sixpay_url, 'CreatePayInit.asp')
-        print('DEBUG--------------------------------------------\n')
-        print(transaction_data)
-        url_request = requests.post(endpoint, **transaction_data)
+        url_request = requests.post(endpoint, data=transaction_data)
         # raise any HTTP errors
         url_request.raise_for_status()
         if url_request.text.startswith('ERROR'):
