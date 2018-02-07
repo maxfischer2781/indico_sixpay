@@ -234,19 +234,19 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     def _get_transaction_parameters(self, payment_data):
         """Parameters for formulating a transaction request *without* any business logic hooks"""
         plugin_settings = payment_data['event_settings']
-        print('DEBUG------------------------------------------------------\n ')
-        print(plugin_settings)
         format_map = FieldFormatMap(payment_data['registration'])
         for format_field in 'order_description', 'order_identifier':
             try:
-                payment_data[format_field] = getattr(plugin_settings, format_field) % (format_map)
+                if not plugin_settings.has_key(format_field):
+                    raise KeyError
+                payment_data[format_field] = plugin_settings.get(format_field) % (format_map)
             except ValueError:
                 message = "Invalid format field placeholder for {0}, please contact the event organisers!"
                 raise HTTPNotImplemented((
                         gettext(message) + '\n\n[' + message + ']'
                     ).format(self.name)
                  )
-            except (KeyError, AttributeError):  # getattr raises AttributeError
+            except KeyError:
                 message = "Unknown format field placeholder '{0}' for {1}, please contact the event organisers!"
                 raise HTTPNotImplemented((
                         gettext(message) + '\n\n[' + message + ']'
