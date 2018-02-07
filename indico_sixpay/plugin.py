@@ -86,7 +86,7 @@ class FormatField(object):
         if not field.data:
             return True
         try:
-            test_format = field.data.format_map(self.field_map)
+            test_format = field.data % self.field_map
         except KeyError as err:
             raise ValidationError('Invalid format string key: {}'.format(err))
         except ValueError as err:
@@ -235,7 +235,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         format_map = FieldFormatMap(payment_data['registration'])
         for format_field in 'order_description', 'order_identifier':
             try:
-                payment_data[format_field] = getattr(plugin_settings, format_field).format_map(format_map)
+                payment_data[format_field] = getattr(plugin_settings, format_field) % (format_map)
             except ValueError:
                 message = "Invalid format field placeholder for {0}, please contact the event organisers!"
                 raise HTTPNotImplemented((
