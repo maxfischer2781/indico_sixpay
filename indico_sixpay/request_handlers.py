@@ -72,7 +72,6 @@ class SixPayResponseHandler(BaseRequestHandler):
             current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
 
     def _process_confirmation(self):
-        print('DEBUG-------ENTER _process_confirmation -----\n')
         """Process the confirmation response inside indico"""
         # DATA: '<IDP
         #           MSGTYPE="PayConfirm" TOKEN="(unused)" VTVERIFY="(obsolete)" KEYID="1-0"
@@ -101,15 +100,12 @@ class SixPayResponseHandler(BaseRequestHandler):
         try:
             self._verify_signature(transaction_xml, transaction_signature, transaction_data['ID'])
             if self._is_duplicate_transaction(transaction_data=transaction_data):
-                print('DEBUG-------TRANSACTION IS DUPLICATE-----\n')
                 # we have already handled the transaction
                 return True
             if self._confirm_transaction(transaction_data):
-                print('DEBUG-------TRANSACTION CONFIRMED -----\n')
                 self._verify_amount(transaction_data)
                 self._register_transaction(transaction_data)
         except TransactionFailure as err:
-            print('DEBUG-------TransactionFailure %s: %s -----\n') % (err.step, err.details)
             current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
             raise
         return True
@@ -160,13 +156,11 @@ class SixPayResponseHandler(BaseRequestHandler):
         )
 
     def _verify_amount(self, transaction_data):
-        print('DEBUG-------ENTER _verify_amount -----\n')
         """Verify the amount and currency of the payment; sends an email but still registers incorrect payments"""
         expected_amount = float(self.registration.price)
         expected_currency = self.registration.currency
         amount = float(transaction_data['AMOUNT'])
         currency = transaction_data['CURRENCY']
-        print('DEBUG-- Expected: %s %s; Got: %s %s\n') % (to_small_currency(expected_amount, expected_currency), expected_currency, amount, currency)
         if to_small_currency(expected_amount, expected_currency) == amount and expected_currency == currency:
             return True
         current_plugin.logger.warning(
@@ -177,7 +171,6 @@ class SixPayResponseHandler(BaseRequestHandler):
         return False
 
     def _confirm_transaction(self, transaction_data):
-        print('DEBUG-------ENTER _confirm_transaction -----\n')
         """Confirm that the transaction is valid to SixPay"""
         completion_data = {'ACCOUNTID': transaction_data['ACCOUNTID'], 'ID': transaction_data['ID']}
         if 'test.saferpay.com' in current_plugin.settings.get('url'):
@@ -189,7 +182,6 @@ class SixPayResponseHandler(BaseRequestHandler):
 
     def _register_transaction(self, transaction_data):
         """Register the transaction persistently for Indico"""
-        print('DEBUG-------ENTER _register_transaction -----\n')
         register_transaction(
             registration=self.registration,
             # SixPay uses SMALLEST currency, Indico expects LARGEST currency
