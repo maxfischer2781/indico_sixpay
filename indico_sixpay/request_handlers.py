@@ -166,7 +166,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         expected_currency = self.registration.currency
         amount = transaction_data['AMOUNT']
         currency = transaction_data['CURRENCY']
-        print('DEBUG-- Expected: %s %s; Got: %s %s\n') % (expected_amount, expected_currency, amount, currency)
+        print('DEBUG-- Expected: %s %s; Got: %s %s\n') % (to_small_currency(expected_amount, expected_currency), expected_currency, amount, currency)
         if to_small_currency(expected_amount, expected_currency) == amount and expected_currency == currency:
             return True
         current_plugin.logger.warning(
