@@ -86,7 +86,7 @@ class FormatField(object):
         if not field.data:
             return True
         try:
-            test_format = field.data.format_map(self.field_map)
+            test_format = field.data % self.field_map
         except KeyError as err:
             raise ValidationError('Invalid format string key: {}'.format(err))
         except ValueError as err:
@@ -189,6 +189,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     default_settings = {
         'method_name': 'SixPay',
         'url': 'https://www.saferpay.com/hosting',
+        'account_id': None,
         'order_description': '%(event_title)s, %(user_name)s',
         'order_identifier': '%(eventuser_id)s',
         'notification_mail': None,
@@ -197,6 +198,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         'enabled': False,
         'method_name': None,
         'url': None,
+        'account_id': None,
         'order_description': None,
         'order_identifier': None,
         'notification_mail': None,
@@ -226,7 +228,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         transaction['FAILLINK'] = url_for_plugin('payment_sixpay.failure', registration.locator.uuid, _external=True)
         # where to asynchronously call back from SixPay
         transaction['NOTIFYURL'] = url_for_plugin('payment_sixpay.notify', registration.locator.uuid, _external=True)
-        data['payment_url'] = self._get_payment_url(sixpay_url=plugin_settings.url, transaction_data=transaction)
+        data['payment_url'] = self._get_payment_url(sixpay_url=plugin_settings.get('url'), transaction_data=transaction)
         return data
 
     def _get_transaction_parameters(self, payment_data):
@@ -235,7 +237,9 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         format_map = FieldFormatMap(payment_data['registration'])
         for format_field in 'order_description', 'order_identifier':
             try:
-                payment_data[format_field] = getattr(plugin_settings, format_field).format_map(format_map)
+                if not plugin_settings.has_key(format_field):
+                    raise KeyError
+                payment_data[format_field] = plugin_settings.get(format_field) % (format_map)
             except ValueError:
                 message = "Invalid format field placeholder for {0}, please contact the event organisers!"
                 raise HTTPNotImplemented((
@@ -250,7 +254,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
                 )
         # see the SixPay Manual on what these things mean
         transaction_parameters = {
-            'ACCOUNTID': str(plugin_settings.account_id),
+            'ACCOUNTID': str(plugin_settings.get('account_id')),
             # indico handles price as largest currency, but six expects smallest
             # e.g. EUR: indico uses 100.2 Euro, but six expects 10020 Cent
             'AMOUNT': '{:.0f}'.format(to_small_currency(payment_data['amount'], payment_data['currency'])),
@@ -259,14 +263,14 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
             'ORDERID': payment_data['order_identifier'][:80],
             'SHOWLANGUAGES': 'yes',
         }
-        if plugin_settings.notification_mail:
-            transaction_parameters['NOTIFYADDRESS'] = plugin_settings.notification_mail
+        if plugin_settings.get('notification_mail'):
+            transaction_parameters['NOTIFYADDRESS'] = plugin_settings.get('notification_mail')
         return transaction_parameters
 
     def _get_payment_url(self, sixpay_url, transaction_data):
         """Send transaction data to SixPay to get a signed URL for the user request"""
         endpoint = urlparse.urljoin(sixpay_url, 'CreatePayInit.asp')
-        url_request = requests.post(endpoint, **transaction_data)
+        url_request = requests.post(endpoint, data=transaction_data)
         # raise any HTTP errors
         url_request.raise_for_status()
         if url_request.text.startswith('ERROR'):
