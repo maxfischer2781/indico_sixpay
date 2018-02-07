@@ -109,6 +109,7 @@ class SixPayResponseHandler(BaseRequestHandler):
                 self._verify_amount(transaction_data)
                 self._register_transaction(transaction_data)
         except TransactionFailure as err:
+            print('DEBUG-------TransactionFailure %s: %s -----\n') % (err.step, err.details)
             current_plugin.logger.warning("SixPay transaction failed during %s: %s" % (err.step, err.details))
             raise
         return True
