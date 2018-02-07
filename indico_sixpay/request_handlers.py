@@ -193,7 +193,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         register_transaction(
             registration=self.registration,
             # SixPay uses SMALLEST currency, Indico expects LARGEST currency
-            amount=to_large_currency(transaction_data['AMOUNT'], transaction_data['CURRENCY']),
+            amount=to_large_currency(float(transaction_data['AMOUNT']), transaction_data['CURRENCY']),
             currency=transaction_data['CURRENCY'],
             action=TransactionAction.complete,
             provider='sixpay',
