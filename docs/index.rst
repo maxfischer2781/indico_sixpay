@@ -12,7 +12,6 @@
     source/installation
     source/configuration
     source/design
-    Changelog <source/changelog>
     Module Index <source/api/modules>
 
 The :py:mod:`indico_sixpay` adds an EPayment option for
@@ -23,7 +22,7 @@ Overview
 --------
 
 If the plugin is enabled, event participants can select the ``SixPay`` payment method during the EPayment checkout.
-Payment is performed via the **Saferpay Payment Page**, an external service provided by SIX Payment Services.
+Payment is performed via the **Saferpay Payment Page**, an external service provided by *SIX Payment Services*.
 The plugin handles the user interaction inside Indico, and the secure, asynchronous transaction with SIX Payment Services.
 
 The plugin must be installed for an entire Indico instance.
@@ -34,7 +33,7 @@ The plugin follows the
 `Saferpay Payment Page <https://www.six-payment-services.com/dam/classic/saferpay/Saferpay_Payment_Page_EN.pdf>`_
 specification version ``5.1``.
 
-*This is a prerelease for Indico 2.0.*
+*This plugin supports Indico 2.0.*
 *The legacy plugin for Indico 1.2 is hosted on* `github <https://github.com/maxfischer2781/indico_sixpay/tree/indico-1.2>`_.
 
 Quick Guide
