@@ -1,11 +1,19 @@
 """
-+++++++++++++++++
-``indico_sixpay``
-+++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++
+``indico_sixpay`` - SIX EPayment Plugin for Indico
+++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. image:: https://readthedocs.org/projects/indico_sixpay/badge/?version=latest
     :target: http://indico-sixpay.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
+    :alt: Documentation
+
+.. image:: https://img.shields.io/pypi/v/indico_sixpay.svg
+    :alt: Available on PyPI
+    :target: https://pypi.python.org/pypi/indico_sixpay/
+
+.. image:: https://img.shields.io/github/license/maxfischer2781/indico_sixpay.svg
+    :alt: License
+    :target: https://github.com/maxfischer2781/indico_sixpay/blob/master/LICENSE
 
 Plugin for the Indico event management system to use EPayment via SIX Payment services.
 
