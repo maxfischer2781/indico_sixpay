@@ -74,6 +74,7 @@ class FormatField(object):
         'event_id': 123,
         'event_title': 'Placeholder: The Event',
         'eventuser_id': 'e123u1234',
+        'registration_title': 'EarlyBird Registration'
     }
 
     def __init__(self, max_length=float('inf'), field_map=None):
