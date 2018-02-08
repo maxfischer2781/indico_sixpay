@@ -200,6 +200,9 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
 
     @staticmethod
     def get_field_format_map(registration):
+        from pprint import pprint
+        print('DEGUG -------------------------')
+        pprint(vars(registration))
         """Generates dict which provides registration information for format fields"""
         return {
             'user_id': registration.user_id,
