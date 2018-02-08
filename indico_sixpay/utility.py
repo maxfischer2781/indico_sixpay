@@ -52,7 +52,7 @@ def validate_currency(iso_code):
 
 def to_small_currency(large_currency_amount, iso_code):
     """
-    Convert from an amount from large currency to small currency, e.g. 2.3 Euro to 230 Eurocent
+    Convert an amount from large currency to small currency, e.g. 2.3 Euro to 230 Eurocent
 
     :param large_currency_amount: the amount in large currency, e.g. ``2.3``
     :param iso_code: the ISO currency code, e.g. ``"EUR"``
@@ -66,7 +66,7 @@ def to_small_currency(large_currency_amount, iso_code):
 
 
 def to_large_currency(small_currency_amount, iso_code):
-    """Reverse of :py:func:`to_small_currency`"""
+    """Inverse of :py:func:`to_small_currency`"""
     validate_currency(iso_code)
     exponent = iso4217.Currency(iso_code).exponent
     if exponent == 0:
