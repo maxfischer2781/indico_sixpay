@@ -157,9 +157,9 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         'method_name': 'SixPay',
         'url': 'https://www.saferpay.com/hosting',
         'account_id': None,
-        'order_description': '{event_title}, {user_name}',
+        'order_description': '{event_title}, {registration_title}, {user_name}',
         'order_identifier': '{eventuser_id}',
-        'notification_mail': None,
+        'notification_mail': None
     }
     default_event_settings = {
         'enabled': False,
@@ -200,10 +200,6 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
 
     @staticmethod
     def get_field_format_map(registration):
-        from pprint import pprint
-        print('DEGUG -------------------------')
-        pprint(vars(registration))
-        pprint(vars(registration.registration_form))
         """Generates dict which provides registration information for format fields"""
         return {
             'user_id': registration.user_id,
@@ -213,6 +209,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
             'event_id': registration.event_id,
             'event_title': registration.event.title,
             'eventuser_id': 'e{0}u{1}'.format(registration.event_id, registration.user_id),
+            'registration_title': registration.registration_form.title
         }
 
     def _get_transaction_parameters(self, payment_data):
