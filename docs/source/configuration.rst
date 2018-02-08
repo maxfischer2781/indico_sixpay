@@ -83,6 +83,10 @@ These are dynamically filled for each event and registrant.
 
   A globally unique identifier for both the event and user.
 
+``{registration_title}`` [`Early Bird`]
+
+  The title of the registration, as shown by Indico.
+
 Placeholders use the `Format String Syntax`_ of Python.
 For example, ``{event_title:.6}`` is replaced with the first six characters of the event title.
 
