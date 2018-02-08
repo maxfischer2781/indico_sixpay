@@ -7,19 +7,11 @@ package_about = {}
 with open(os.path.join(repo_base_dir, "indico_sixpay", "__about__.py")) as about_file:
     exec(about_file.read(), package_about)
 
-long_description = """
-+++++++++++++++++
-``indico_sixpay``
-+++++++++++++++++
-
-Plugin for the Indico event management system to use EPayment via SIX Payment services.
-"""
-
 setup(
     name=package_about['__title__'],
     version=package_about['__version__'],
     description=package_about['__summary__'],
-    long_description=long_description.strip(),
+    long_description=package_about['__doc__'].strip(),
     author=package_about['__author__'],
     author_email=package_about['__email__'],
     url=package_about['__url__'],
