@@ -74,6 +74,7 @@ class FormatField(object):
         'event_id': 123,
         'event_title': 'Placeholder: The Event',
         'eventuser_id': 'e123u1234',
+        'registration_title': 'EarlyBird Registration'
     }
 
     def __init__(self, max_length=float('inf'), field_map=None):
@@ -115,7 +116,7 @@ class PluginSettingsForm(PaymentPluginSettingsFormBase):
     )
     order_description = StringField(
         label=gettext('Order Description'),
-        validators=[DataRequired(), FormatField(max_length=50)],
+        validators=[DataRequired(), FormatField(max_length=80)],
         description=gettext('The description of each order in a human readable way.'
                             'This description is presented to the registrant during the transaction with SixPay.')
     )
@@ -157,9 +158,9 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         'method_name': 'SixPay',
         'url': 'https://www.saferpay.com/hosting',
         'account_id': None,
-        'order_description': '{event_title}, {user_name}',
+        'order_description': '{event_title}, {registration_title}, {user_name}',
         'order_identifier': '{eventuser_id}',
-        'notification_mail': None,
+        'notification_mail': None
     }
     default_event_settings = {
         'enabled': False,
@@ -209,6 +210,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
             'event_id': registration.event_id,
             'event_title': registration.event.title,
             'eventuser_id': 'e{0}u{1}'.format(registration.event_id, registration.user_id),
+            'registration_title': registration.registration_form.title
         }
 
     def _get_transaction_parameters(self, payment_data):
