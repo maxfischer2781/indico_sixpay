@@ -116,7 +116,7 @@ class PluginSettingsForm(PaymentPluginSettingsFormBase):
     )
     order_description = StringField(
         label=gettext('Order Description'),
-        validators=[DataRequired(), FormatField(max_length=50)],
+        validators=[DataRequired(), FormatField(max_length=80)],
         description=gettext('The description of each order in a human readable way.'
                             'This description is presented to the registrant during the transaction with SixPay.')
     )
