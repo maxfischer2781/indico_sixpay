@@ -92,8 +92,8 @@ class SixPayResponseHandler(BaseRequestHandler):
         #           ECI="1"
         #           CAVV="jAABBIIFmAAAAAAAAAAAAAAAAAA="
         #           XID="VVE3DQlhXR8PBD5JPzYGWW5FNgI=" />'
-        transaction_xml = request.form['DATA']
-        transaction_signature = request.form['SIGNATURE']
+        transaction_xml = request.args['DATA']
+        transaction_signature = request.args['SIGNATURE']
         transaction_data = self._parse_transaction_xml(transaction_xml)
         # verify the signature of SixPay for the transaction
         # if this matches, the user completed the transaction as requested by Indico
@@ -157,9 +157,9 @@ class SixPayResponseHandler(BaseRequestHandler):
 
     def _verify_amount(self, transaction_data):
         """Verify the amount and currency of the payment; sends an email but still registers incorrect payments"""
-        expected_amount = self.registration.price
+        expected_amount = float(self.registration.price)
         expected_currency = self.registration.currency
-        amount = transaction_data['AMOUNT']
+        amount = float(transaction_data['AMOUNT'])
         currency = transaction_data['CURRENCY']
         if to_small_currency(expected_amount, expected_currency) == amount and expected_currency == currency:
             return True
@@ -178,13 +178,14 @@ class SixPayResponseHandler(BaseRequestHandler):
             completion_data['spPassword'] = '8e7Yn5yk'
         completion_response = self._perform_request('confirmation', 'PayCompleteV2.asp', **completion_data)
         assert completion_response.startswith('OK')
+        return True
 
     def _register_transaction(self, transaction_data):
         """Register the transaction persistently for Indico"""
         register_transaction(
             registration=self.registration,
             # SixPay uses SMALLEST currency, Indico expects LARGEST currency
-            amount=to_large_currency(transaction_data['AMOUNT'], transaction_data['CURRENCY']),
+            amount=to_large_currency(float(transaction_data['AMOUNT']), transaction_data['CURRENCY']),
             currency=transaction_data['CURRENCY'],
             action=TransactionAction.complete,
             provider='sixpay',
