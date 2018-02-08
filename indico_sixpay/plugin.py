@@ -198,7 +198,8 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         data['payment_url'] = self._get_payment_url(sixpay_url=plugin_settings.get('url'), transaction_data=transaction)
         return data
 
-    def get_field_format_map(self, registration):
+    @staticmethod
+    def get_field_format_map(registration):
         """Generates dict which provides registration information for format fields"""
         return {
             'user_id': registration.user_id,
