@@ -21,7 +21,7 @@ setup(
         }
     },
     packages=find_packages(),
-    package_data={'indico_sixpay': ['tpls/*.tpl']},
+    package_data={'indico_sixpay': ['templates/*.html']},
     install_requires=['requests', 'indico>=2.0rc1', 'iso4217'],
     license='GPLv3+',
     classifiers=[
