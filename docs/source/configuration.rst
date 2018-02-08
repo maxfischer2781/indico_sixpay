@@ -25,7 +25,7 @@ Configuration Options
 
   This ID is provided to you by Six Payment Services.
 
-**Order Description**
+**Order Description** [80 characters]
 
   The description of each order in a human readable way.
   This description is presented to the registrant during the transaction with SixPay.
@@ -33,7 +33,7 @@ Configuration Options
   This field is limited to 50 characters, after any placeholders are filled in.
   The default description uses the registrant name and event title.
 
-**Order Identifier**
+**Order Identifier** [80 characters]
 
   The identifier of each order for further processing.
   This identifier is used internally and in your own billing.
@@ -50,7 +50,7 @@ Format Placeholders
 -------------------
 
 The **Order Description/Identifier** settings allow for placeholders.
-These are dynamically filled for each event and registrant.
+These are dynamically filled in for each event and registrant.
 
 ``{user_id}`` [`231`]
 
