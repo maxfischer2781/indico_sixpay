@@ -63,7 +63,7 @@ class FormatField(object):
     :param field_map: keyword arguments to use for test formatting
 
     On validation, a test mapping is applied to the field. This ensures the
-    field has a valid ``str.format_map`` format, and does not use illegal keys
+    field has a valid ``str.format`` format, and does not use illegal keys
     (as determined by ``default_field_map`` and ``field_map``).
     The ``max_length`` is validated against the test-formatted field, which
     is an estimate for an average sized input.
@@ -86,7 +86,7 @@ class FormatField(object):
         if not field.data:
             return True
         try:
-            test_format = field.data % self.field_map
+            test_format = field.data.format(**self.field_map)
         except KeyError as err:
             raise ValidationError('Invalid format string key: {}'.format(err))
         except ValueError as err:
@@ -157,8 +157,8 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         'method_name': 'SixPay',
         'url': 'https://www.saferpay.com/hosting',
         'account_id': None,
-        'order_description': '%(event_title)s, %(user_name)s',
-        'order_identifier': '%(eventuser_id)s',
+        'order_description': '{event_title}, {user_name}',
+        'order_identifier': '{eventuser_id}',
         'notification_mail': None,
     }
     default_event_settings = {
@@ -218,7 +218,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
             try:
                 if not plugin_settings.has_key(format_field):
                     raise KeyError
-                payment_data[format_field] = plugin_settings.get(format_field) % (format_map)
+                payment_data[format_field] = plugin_settings.get(format_field).format(**format_map)
             except ValueError:
                 message = "Invalid format field placeholder for {0}, please contact the event organisers!"
                 raise HTTPNotImplemented((
