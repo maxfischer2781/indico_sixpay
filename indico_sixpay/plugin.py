@@ -203,6 +203,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         from pprint import pprint
         print('DEGUG -------------------------')
         pprint(vars(registration))
+        pprint(vars(registration.registration_form))
         """Generates dict which provides registration information for format fields"""
         return {
             'user_id': registration.user_id,
