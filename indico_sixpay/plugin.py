@@ -63,7 +63,7 @@ class FormatField(object):
     :param field_map: keyword arguments to use for test formatting
 
     On validation, a test mapping is applied to the field. This ensures the
-    field has a valid ``str.format_map`` format, and does not use illegal keys
+    field has a valid ``str.format`` format, and does not use illegal keys
     (as determined by ``default_field_map`` and ``field_map``).
     The ``max_length`` is validated against the test-formatted field, which
     is an estimate for an average sized input.
@@ -86,7 +86,7 @@ class FormatField(object):
         if not field.data:
             return True
         try:
-            test_format = field.data % self.field_map
+            test_format = field.data.format(**self.field_map)
         except KeyError as err:
             raise ValidationError('Invalid format string key: {}'.format(err))
         except ValueError as err:
@@ -141,39 +141,6 @@ class EventSettingsForm(PaymentEventSettingsFormBase):
     notification_mail = PluginSettingsForm.notification_mail
 
 
-class FieldFormatMap(object):
-    """
-    Lazy mapping that provides registration information for format fields
-    """
-    # callables to lazily extract the format field information for a given key
-    extractors = {
-        'user_id': lambda registration: registration.user_id,
-        'user_name': lambda registration: registration.full_name,
-        'user_firstname': lambda registration: registration.first_name,
-        'user_lastname': lambda registration: registration.last_name,
-        'event_id': lambda registration: registration.event_id,
-        'event_title': lambda registration: registration.event.title,
-        'eventuser_id': lambda registration: 'e{0}u{1}'.format(registration.event_id, registration.user_id),
-    }
-
-    def __init__(self, registration):
-        self.registration = registration
-        self._cache = {}
-
-    def __getitem__(self, key):
-        try:
-            item = self._cache[key]
-        except KeyError:
-            item = self._cache[key] = self.extractors[key](self.registration)
-        return item
-
-    def __setitem__(self, key, value):
-        self._cache[key] = value
-
-    def __repr__(self):
-        return '{this.__class__.__name__}<registration={this.registration}, _cache={this._cache}>'.format(this=self)
-
-
 # PaymentPluginMixin, IndicoPlugin
 # This is basically a registry of setting fields, logos and other rendering stuff
 # All the business logic is in `def adjust_payment_form_data`
@@ -190,8 +157,8 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         'method_name': 'SixPay',
         'url': 'https://www.saferpay.com/hosting',
         'account_id': None,
-        'order_description': '%(event_title)s, %(user_name)s',
-        'order_identifier': '%(eventuser_id)s',
+        'order_description': '{event_title}, {user_name}',
+        'order_identifier': '{eventuser_id}',
         'notification_mail': None,
     }
     default_event_settings = {
@@ -231,15 +198,28 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         data['payment_url'] = self._get_payment_url(sixpay_url=plugin_settings.get('url'), transaction_data=transaction)
         return data
 
+    @staticmethod
+    def get_field_format_map(registration):
+        """Generates dict which provides registration information for format fields"""
+        return {
+            'user_id': registration.user_id,
+            'user_name': registration.full_name,
+            'user_firstname': registration.first_name,
+            'user_lastname': registration.last_name,
+            'event_id': registration.event_id,
+            'event_title': registration.event.title,
+            'eventuser_id': 'e{0}u{1}'.format(registration.event_id, registration.user_id),
+        }
+
     def _get_transaction_parameters(self, payment_data):
         """Parameters for formulating a transaction request *without* any business logic hooks"""
         plugin_settings = payment_data['event_settings']
-        format_map = FieldFormatMap(payment_data['registration'])
+        format_map = self.get_field_format_map(payment_data['registration'])
         for format_field in 'order_description', 'order_identifier':
             try:
                 if not plugin_settings.has_key(format_field):
                     raise KeyError
-                payment_data[format_field] = plugin_settings.get(format_field) % (format_map)
+                payment_data[format_field] = plugin_settings.get(format_field).format(**format_map)
             except ValueError:
                 message = "Invalid format field placeholder for {0}, please contact the event organisers!"
                 raise HTTPNotImplemented((
