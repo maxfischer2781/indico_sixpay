@@ -15,6 +15,9 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with SixPay Indico EPayment Plugin;if not, see <http://www.gnu.org/licenses/>.
+"""
+Callbacks for asynchronous replies by the SixPay service and to redirect the user
+"""
 from __future__ import unicode_literals
 import urlparse
 from xml.dom.minidom import parseString
@@ -57,7 +60,14 @@ class BaseRequestHandler(RH):
 
 
 class TransactionFailure(Exception):
-    """A Transaction with SixPay failed"""
+    """
+    A Transaction with SixPay failed
+
+    :param step: name of the step at which the transaction failed
+    :type step: basestring
+    :param details: verbose description of what went wrong
+    :type step: basestring
+    """
     def __init__(self, step, details=None):
         self.step = step
         self.details = details
@@ -66,6 +76,7 @@ class TransactionFailure(Exception):
 class SixPayResponseHandler(BaseRequestHandler):
     """Handler for notification from SixPay service"""
     def _process(self):
+        """process the reply from SixPay about the transaction"""
         try:
             self._process_confirmation()
         except TransactionFailure as err:
@@ -112,6 +123,18 @@ class SixPayResponseHandler(BaseRequestHandler):
 
     @staticmethod
     def _perform_request(task, endpoint, **data):
+        """
+        Helper for performing a request against SixPay
+
+        :param task: description of the request, used for error handling
+        :type task: basestring
+        :param endpoint: the URL endpoint *relative* to the SixPay base URL
+        :type endpoint: basestring
+        :param **data: data passed during the request
+
+        This will automatically raise any HTTP errors encountered during the request.
+        If the request itself fails, a :py:exc:`~.TransactionFailure` is raised for ``task``.
+        """
         request_url = urlparse.urljoin(current_plugin.settings.get('url'), endpoint)
         response = requests.post(request_url, data)
         response.raise_for_status()
@@ -171,7 +194,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         return False
 
     def _confirm_transaction(self, transaction_data):
-        """Confirm that the transaction is valid to SixPay"""
+        """Confirm to SixPay that the transaction is accepted"""
         completion_data = {'ACCOUNTID': transaction_data['ACCOUNTID'], 'ID': transaction_data['ID']}
         if 'test.saferpay.com' in current_plugin.settings.get('url'):
             # password: see "Saferpay Payment Page" specification, v5.1, section 4.6
@@ -181,7 +204,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         return True
 
     def _register_transaction(self, transaction_data):
-        """Register the transaction persistently for Indico"""
+        """Register the transaction persistently within Indico"""
         register_transaction(
             registration=self.registration,
             # SixPay uses SMALLEST currency, Indico expects LARGEST currency

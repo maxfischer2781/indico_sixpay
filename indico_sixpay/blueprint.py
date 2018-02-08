@@ -15,6 +15,9 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with SixPay Indico EPayment Plugin;if not, see <http://www.gnu.org/licenses/>.
+"""
+Definition of callbacks exposed by the Indico server
+"""
 from __future__ import unicode_literals
 
 from indico.core.plugins import IndicoPluginBlueprint
@@ -22,6 +25,7 @@ from indico.core.plugins import IndicoPluginBlueprint
 from .request_handlers import SixPayResponseHandler, UserCancelHandler, UserFailureHandler, UserSuccessHandler
 
 
+#: url mount points exposing callbacks
 blueprint = IndicoPluginBlueprint(
     'payment_sixpay', __name__,
     url_prefix='/event/<confId>/registrations/<int:reg_form_id>/payment/response/sixpay'

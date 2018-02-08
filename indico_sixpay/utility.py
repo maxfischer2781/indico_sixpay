@@ -26,14 +26,27 @@ from indico.util.i18n import make_bound_gettext
 gettext = make_bound_gettext('payment_sixpay')
 
 
+#: currencies for which the major to minor currency ratio is not a multiple of 10
 NON_DECIMAL_CURRENCY = {'MRU', 'MGA'}
 
 
 def validate_currency(iso_code):
-    """Check whether the currency can be properly handled by this plugin"""
+    """
+    Check whether the currency can be properly handled by this plugin
+
+    :param iso_code: an ISO4217 currency code, e.g. ``"EUR"``
+    :type iso_code: basestring
+    :raises: :py:exc:`~.HTTPNotImplemented` if the currency is not valid
+    """
     if iso_code in NON_DECIMAL_CURRENCY:
         raise HTTPNotImplemented(
             gettext("Unsupported currency '{0}' for SixPay. Please contact the organisers").format(iso_code)
+        )
+    try:
+        iso4217.Currency(iso_code)
+    except ValueError:
+        raise HTTPNotImplemented(
+            gettext("Unknown currency '{0}' for SixPay. Please contact the organisers").format(iso_code)
         )
 
 
@@ -42,7 +55,7 @@ def to_small_currency(large_currency_amount, iso_code):
     Convert from an amount from large currency to small currency, e.g. 2.3 Euro to 230 Eurocent
 
     :param large_currency_amount: the amount in large currency, e.g. ``2.3``
-    :param iso_code: the ISO currency code, e.g. ``EUR``
+    :param iso_code: the ISO currency code, e.g. ``"EUR"``
     :return: the amount in small currency, e.g. ``230``
     """
     validate_currency(iso_code)

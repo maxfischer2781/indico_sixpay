@@ -15,6 +15,13 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with SixPay Indico EPayment Plugin;if not, see <http://www.gnu.org/licenses/>.
+"""
+Core of the SixPay plugin
+
+The entry point for indico is the :py:class:`~.SixpayPaymentPlugin`.
+It handles configuration via the settings forms, initiates payments
+and provides callbacks for finished payments via its blueprint.
+"""
 from __future__ import unicode_literals, absolute_import
 import urlparse
 
@@ -68,6 +75,7 @@ class FormatField(object):
     The ``max_length`` is validated against the test-formatted field, which
     is an estimate for an average sized input.
     """
+    #: default placeholders to test length after formatting
     default_field_map = {
         'user_id': 1234,
         'user_name': 'Jane Whiteacre',
@@ -103,6 +111,7 @@ class FormatField(object):
 
 
 class PluginSettingsForm(PaymentPluginSettingsFormBase):
+    """Configuration form for the Plugin across all events"""
     url = URLField(
         gettext('SixPay Saferpay URL'),
         [DataRequired()],
@@ -134,6 +143,7 @@ class PluginSettingsForm(PaymentPluginSettingsFormBase):
 
 
 class EventSettingsForm(PaymentEventSettingsFormBase):
+    """Configuration form for the Plugin for a specific event"""
     # every setting may be overwritten for each event
     url = PluginSettingsForm.url
     account_id = PluginSettingsForm.account_id
@@ -144,7 +154,7 @@ class EventSettingsForm(PaymentEventSettingsFormBase):
 
 # PaymentPluginMixin, IndicoPlugin
 # This is basically a registry of setting fields, logos and other rendering stuff
-# All the business logic is in `def adjust_payment_form_data`
+# All the business logic is in :py:func:`adjust_payment_form_data`
 class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     """
     SixPay Saferpay
@@ -152,8 +162,11 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     Provides an EPayment method using the SixPay Saferpay API.
     """
     configurable = True
+    #: form for default configuration across events
     settings_form = PluginSettingsForm
+    #: form for configuration for specific events
     event_settings_form = EventSettingsForm
+    #: global default settings - should be a reasonable default
     default_settings = {
         'method_name': 'SixPay',
         'url': 'https://www.saferpay.com/hosting',
@@ -162,6 +175,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         'order_identifier': '{eventuser_id}',
         'notification_mail': None
     }
+    #: per event default settings - use the global settings
     default_event_settings = {
         'enabled': False,
         'method_name': None,
@@ -173,6 +187,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     }
 
     def get_blueprints(self):
+        """Blueprint for URL endpoints with callbacks"""
         return blueprint
 
     # Dear Future Maintainer,
@@ -185,6 +200,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     #   - We put the transaction URL we got into `data` for the *user* to perform his request securely
     #   - Return uses `indico_sixpay/templates/event_payment_form.html`, presenting a trigger button to the user
     def adjust_payment_form_data(self, data):
+        """Prepare the payment form shown to registrants"""
         registration = data['registration']
         plugin_settings = data['event_settings']
         # parameters of the transaction - amount, currency, ...
