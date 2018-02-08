@@ -30,7 +30,8 @@ Configuration Options
   The description of each order in a human readable way.
   This description is presented to the registrant during the transaction with SixPay.
 
-  This field is limited to 50 characters, after any placeholders are filled in.
+  This field is limited to 80 characters, after any placeholders are filled in.
+  The suggested length is 50 characters.
   The default description uses the registrant name and event title.
 
 **Order Identifier** [80 characters]
@@ -91,8 +92,29 @@ Placeholders use the `Format String Syntax`_ of Python.
 For example, ``{event_title:.6}`` is replaced with the first six characters of the event title.
 
 Note that both fields taking placeholders have a maximum size.
-Since a template cannot be validated exactly, size validation assumes a reasonable but short input.
+Since a template cannot be validated exactly, size validation assumes a reasonably terse input.
 In practice, fields may be silently shortened after formatting with long input.
+
+Placeholder Examples
+^^^^^^^^^^^^^^^^^^^^
+
+Below are some examples for use as **Order Description** and **Order Identifier**:
+
+===================================================== ====================================
+Format Template                                       Example Output
+===================================================== ====================================
+   **Order Description**
+------------------------------------------------------------------------------------------
+``{event_title} (RegNr. {user_id})``                  My Conference (RegNr. 231)
+``{event_title}: {user_name} ({registration_title})`` My Conference: Jane Doe (Early Bird)
+``{event_title} ({registration_title})``              My Conference (Early Bird)
+----------------------------------------------------- ------------------------------------
+   **Order Identifier**
+------------------------------------------------------------------------------------------
+``{eventuser_id}-{user_firstname:.1}{user_lastname}`` e18u231-JDoe
+``{event_title:.7} {eventuser_id}``                   My Conf e18u231
+===================================================== ====================================
+
 
 .. _issue ticket: https://github.com/maxfischer2781/indico_sixpay/pulls
 
