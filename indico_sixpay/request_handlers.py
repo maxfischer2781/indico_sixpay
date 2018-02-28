@@ -75,6 +75,12 @@ class TransactionFailure(Exception):
 
 class SixPayResponseHandler(BaseRequestHandler):
     """Handler for notification from SixPay service"""
+    def __init__(self):
+        super(SixPayResponseHandler, self).__init__()
+        # prefer event supplied sixpay url over global sixpay url
+        self.sixpay_url = current_plugin.event_settings.get(self.registration.registration_form.event, 'url') \
+            or current_plugin.settings.get('url')
+
     def _process(self):
         """process the reply from SixPay about the transaction"""
         try:
@@ -121,8 +127,7 @@ class SixPayResponseHandler(BaseRequestHandler):
             raise
         return True
 
-    @staticmethod
-    def _perform_request(task, endpoint, **data):
+    def _perform_request(self, task, endpoint, **data):
         """
         Helper for performing a request against SixPay
 
@@ -135,7 +140,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         This will automatically raise any HTTP errors encountered during the request.
         If the request itself fails, a :py:exc:`~.TransactionFailure` is raised for ``task``.
         """
-        request_url = urlparse.urljoin(current_plugin.settings.get('url'), endpoint)
+        request_url = urlparse.urljoin(self.sixpay_url, endpoint)
         response = requests.post(request_url, data)
         response.raise_for_status()
         if response.text.startswith('ERROR'):
@@ -196,7 +201,7 @@ class SixPayResponseHandler(BaseRequestHandler):
     def _confirm_transaction(self, transaction_data):
         """Confirm to SixPay that the transaction is accepted"""
         completion_data = {'ACCOUNTID': transaction_data['ACCOUNTID'], 'ID': transaction_data['ID']}
-        if 'test.saferpay.com' in current_plugin.settings.get('url'):
+        if 'test.saferpay.com' in self.sixpay_url:
             # password: see "Saferpay Payment Page" specification, v5.1, section 4.6
             completion_data['spPassword'] = '8e7Yn5yk'
         completion_response = self._perform_request('confirmation', 'PayCompleteV2.asp', **completion_data)
