@@ -1,3 +1,4 @@
+==================================================
 ``indico_sixpay`` - SIX EPayment Plugin for Indico
 ==================================================
 
@@ -23,6 +24,7 @@
 
     source/installation
     source/configuration
+    source/changelog
     source/design
     Module Index <source/api/modules>
 

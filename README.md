@@ -46,12 +46,6 @@ After reloading the EPayment plugin in the Indico Admin panel, you can enable th
 This project is hosted on [github](https://github.com/maxfischer2781/indico_sixpay).
 If you encounter any bugs or missing features, please use the [bug tracker](https://github.com/maxfischer2781/indico_sixpay/issues) or submit a [pull request](https://github.com/maxfischer2781/indico_sixpay/pulls).
 
-### Changelog
-
-* **v2.0pre**
-
-    * This is a pre-release of a draft/test version. Any features, interfaces and capabilities are subject to changes.
-
 ## Disclaimer
 
 This plugin is in no way endorsed, supported or provided by SIX, Indico, KIT or any other service, provider or entity.
