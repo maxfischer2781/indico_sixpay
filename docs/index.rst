@@ -14,7 +14,7 @@
     :alt: License
     :target: https://github.com/maxfischer2781/indico_sixpay/blob/master/LICENSE
 
-.. image:: https://img.shields.io/github/commits-since/maxfischer2781/indico_sixpay/v2.0.0.svg
+.. image:: https://img.shields.io/github/commits-since/maxfischer2781/indico_sixpay/v2.0.1.svg
     :alt: Repository
     :target: https://github.com/maxfischer2781/indico_sixpay/tree/master
 
