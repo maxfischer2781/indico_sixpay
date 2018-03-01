@@ -6,7 +6,7 @@ Changelog
 v2.0.1 -- 2018-03-01
 --------------------
 
-    * event settings overwrite global settings (`issue #6 <https://github.com/maxfischer2781/indico_sixpay/issues/6>`_)
+    * event settings override global settings (`issue #6 <https://github.com/maxfischer2781/indico_sixpay/issues/6>`_)
 
 v2.0.0 -- 2018-02-08
 --------------------
