@@ -77,6 +77,11 @@ class SixPayResponseHandler(BaseRequestHandler):
     """Handler for notification from SixPay service"""
     def __init__(self):
         super(SixPayResponseHandler, self).__init__()
+        # registration context is not initialised before `self._process_args`...
+        self.sixpay_url = None  # type: str
+
+    def _process_args(self):
+        super(SixPayResponseHandler, self)._process_args()
         # prefer event supplied sixpay url over global sixpay url
         self.sixpay_url = current_plugin.event_settings.get(self.registration.registration_form.event, 'url') \
             or current_plugin.settings.get('url')
