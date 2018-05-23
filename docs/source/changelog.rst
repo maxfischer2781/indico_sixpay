@@ -3,6 +3,11 @@ Changelog
 +++++++++
 
 
+v2.0.2 -- 2018-05-23
+--------------------
+
+    * Default SaferPay URL includes a trailing slash to form correct URLs.
+
 v2.0.1 -- 2018-03-01
 --------------------
 
