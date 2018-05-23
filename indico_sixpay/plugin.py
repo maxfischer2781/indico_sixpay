@@ -169,7 +169,7 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     #: global default settings - should be a reasonable default
     default_settings = {
         'method_name': 'SixPay',
-        'url': 'https://www.saferpay.com/hosting',
+        'url': 'https://www.saferpay.com/hosting/',
         'account_id': None,
         'order_description': '{event_title}, {registration_title}, {user_name}',
         'order_identifier': '{eventuser_id}',
