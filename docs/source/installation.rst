@@ -4,6 +4,8 @@ Installation
 The plugin can be installed using standard Python package managers.
 To enable the plugin, it must be added to the configuration file of indico.
 
+.. seealso:: The official `Indico Plugin Installation Guide`_.
+
 Note that at least ``indico`` 2.0 is required, and will be installed automatically if it is missing.
 
 Installing the package
@@ -45,3 +47,13 @@ Note that if you need multiple plugins, you must all include them in the set of 
 .. code:: python
 
     PLUGINS = {'payment_manual', 'payment_paypal', 'payment_sixpay'}
+
+After changing the configuration, trigger a reload of the indico services.
+Issue the following commands as ``root``:
+
+.. code:: bash
+
+    touch ~/web/indico.wsgi
+    systemctl restart indico-celery.service
+
+.. _Indico Plugin Installation Guide: https://docs.getindico.io/en/latest/installation/plugins/
