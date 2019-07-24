@@ -25,6 +25,10 @@ and provides callbacks for finished payments via its blueprint.
 from __future__ import unicode_literals, absolute_import
 import urlparse
 
+import json
+
+import uuid
+
 import requests
 from werkzeug.exceptions import NotImplemented as HTTPNotImplemented, InternalServerError as HTTPInternalServerError
 
@@ -40,6 +44,11 @@ from .utility import gettext, to_small_currency
 # blueprint mounts the request handlers onto URLs
 from .blueprint import blueprint
 
+saverpay_json_api_spec = '1.12'
+saverpay_pp_init_url = '/Payment/v1/PaymentPage/Initialize'
+saverpay_pp_assert_url = '/Payment/v1/PaymentPage/Assert'
+saverpay_pp_capture_url = '/Payment/v1/Transaction/Capture'
+saverpay_pp_cancel_url = '/Payment/v1/Transaction/Cancel'
 
 # Dear Future Maintainer,
 #
@@ -210,6 +219,8 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
             for key in
             (set(event_settings) | set(global_settings))
         }
+        # Build request header
+        request_header = self._get_pp_init_request_header(data, plugin_settings)
         # parameters of the transaction - amount, currency, ...
         transaction = self._get_transaction_parameters(data)
         # callbacks of the transaction - where to announce success, failure, ...
@@ -271,6 +282,24 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
         if plugin_settings.get('notification_mail'):
             transaction_parameters['NOTIFYADDRESS'] = plugin_settings.get('notification_mail')
         return transaction_parameters
+
+    @staticmethod
+    def _get_customer_id(account_id):
+        """Extract customer ID from account ID.
+
+        Customer ID is the first part (befor the hyphen) of the account ID.
+        """
+        return account_id.split('-')[0]
+
+    def _get_pp_init_request_header(self, data, plugin_settings):
+        """Create request header container for initializing payment page request"""
+        request_header = {
+            'SpecVersion': saverpay_json_api_spec,
+            'CustomerId': self._get_customer_id(plugin_settings['account_id']),
+            'RequestID': str(uuid.uuid4()),
+            'RetryIndicator': 0,
+        }
+        return request_header
 
     def _get_payment_url(self, sixpay_url, transaction_data):
         """Send transaction data to SixPay to get a signed URL for the user request"""
