@@ -122,18 +122,18 @@ class FormatField(object):
 class PluginSettingsForm(PaymentPluginSettingsFormBase):
     """Configuration form for the Plugin across all events"""
     url = URLField(
-        gettext('SixPay Saferpay URL'),
-        [DataRequired()],
+        label=gettext('SixPay Saferpay URL'),
+        validators=[DataRequired()],
         description=gettext('URL to contact the Six Payment Service'),
     )
     username = StringField(
         label=gettext('Username'),
-        [DataRequired()],
+        validators=[DataRequired()],
         description=gettext('SaferPay JSON API User name.')
     )
     password = PasswordField(
         label=gettext('Password'),
-        [DataRequired()],
+        validators=[DataRequired()],
         description=gettext('SaferPay JSON API User password.')
     )
     account_id = StringField(
