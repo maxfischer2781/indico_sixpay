@@ -62,7 +62,7 @@ def to_small_currency(large_currency_amount, iso_code):
     exponent = iso4217.Currency(iso_code).exponent
     if exponent == 0:
         return large_currency_amount
-    return large_currency_amount * (10 ** exponent)
+    return int(large_currency_amount * (10 ** exponent))
 
 
 def to_large_currency(small_currency_amount, iso_code):
