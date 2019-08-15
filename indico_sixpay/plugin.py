@@ -50,11 +50,7 @@ from .utility import (
 # blueprint mounts the request handlers onto URLs
 from .blueprint import blueprint
 
-saferpay_json_api_spec = '1.12'
-saferpay_pp_init_url = '/Payment/v1/PaymentPage/Initialize'
-saferpay_pp_assert_url = '/Payment/v1/PaymentPage/Assert'
-saferpay_pp_capture_url = '/Payment/v1/Transaction/Capture'
-saferpay_pp_cancel_url = '/Payment/v1/Transaction/Cancel'
+from .utility import saferpay_json_api_spec, saferpay_pp_init_url
 
 # Dear Future Maintainer,
 #

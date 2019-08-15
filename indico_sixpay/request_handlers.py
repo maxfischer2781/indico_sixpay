@@ -38,10 +38,11 @@ from .utility import (
     gettext, to_large_currency, to_small_currency, get_request_header,
     get_setting
 )
-from .plugin import (
-    saferpay_pp_assert_url, saferpay_pp_capture_url,
+from .utility import (
+    saferpay_pp_assert_url,
+    saferpay_pp_capture_url,
     saferpay_json_api_spec,
-    saferpay_pp_cancel_url,
+    saferpay_pp_cancel_url
 )
 
 # RH from indico.web.rh
