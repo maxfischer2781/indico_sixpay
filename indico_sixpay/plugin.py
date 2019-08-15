@@ -31,7 +31,7 @@ from werkzeug.exceptions import (
     InternalServerError as HTTPInternalServerError
 )
 
-from wtforms.fields.core import StringField, PasswordField
+from wtforms.fields import StringField, PasswordField
 from wtforms.fields.html5 import URLField
 from wtforms.validators import (
     DataRequired, Optional, Regexp, Length, Email, ValidationError
