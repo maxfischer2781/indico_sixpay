@@ -62,7 +62,7 @@ class BaseRequestHandler(RH):
     CSRF_ENABLED = False
 
     def _process_args(self):
-        self.token = request.json['Token']
+        self.token = request.args['token']
         self.registration = Registration.find_first(uuid=self.token)
         if not self.registration:
             raise BadRequest
