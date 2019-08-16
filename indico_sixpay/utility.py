@@ -32,10 +32,10 @@ gettext = make_bound_gettext('payment_sixpay')
 
 # Saferpay API details
 saferpay_json_api_spec = '1.12'
-saferpay_pp_init_url = '/Payment/v1/PaymentPage/Initialize'
-saferpay_pp_assert_url = '/Payment/v1/PaymentPage/Assert'
-saferpay_pp_capture_url = '/Payment/v1/Transaction/Capture'
-saferpay_pp_cancel_url = '/Payment/v1/Transaction/Cancel'
+saferpay_pp_init_url = 'Payment/v1/PaymentPage/Initialize'
+saferpay_pp_assert_url = 'Payment/v1/PaymentPage/Assert'
+saferpay_pp_capture_url = 'Payment/v1/Transaction/Capture'
+saferpay_pp_cancel_url = 'Payment/v1/Transaction/Cancel'
 
 # currencies for which the major to minor currency ratio
 # is not a multiple of 10
