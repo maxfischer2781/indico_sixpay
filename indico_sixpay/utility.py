@@ -125,9 +125,12 @@ def get_terminal_id(account_id):
     return account_id.split('-')[1]
 
 
-def get_setting(setting):
+def get_setting(setting, event=None):
     """Return a configuration setting of the plugin."""
-    return (
-        current_plugin.event_settings.get(setting)
-        or current_plugin.settings.get(setting)
-    )
+    if event:
+        return (
+            current_plugin.event_settings.get(event, setting)
+            or current_plugin.settings.get(setting)
+        )
+    else:
+        return current_plugin.settings.get(setting)

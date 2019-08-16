@@ -67,6 +67,9 @@ class BaseRequestHandler(RH):
         if not self.registration:
             raise BadRequest
 
+    def _get_setting(self, setting):
+        return get_setting(setting, self.registration.registration_form.event)
+
 
 class TransactionFailure(Exception):
     """A Transaction with SixPay failed.
@@ -94,8 +97,7 @@ class SixPayResponseHandler(BaseRequestHandler):
 
     def _process_args(self):
         super(SixPayResponseHandler, self)._process_args()
-        # prefer event supplied sixpay url over global sixpay url
-        self.sixpay_url = get_setting('url')
+        self.sixpay_url = self._get_setting('url')
 
     def _process(self):
         """Process the reply from SixPay about the transaction."""
@@ -148,7 +150,10 @@ class SixPayResponseHandler(BaseRequestHandler):
         is raised for ``task``.
         """
         request_url = urlparse.urljoin(self.sixpay_url, endpoint)
-        credentials = (get_setting('username'), get_setting('password'))
+        credentials = (
+            self._get_setting('username'),
+            self._get_setting('password')
+        )
         response = requests.post(
             request_url, json=data, auth=credentials
         )
@@ -170,7 +175,7 @@ class SixPayResponseHandler(BaseRequestHandler):
             saferpay_pp_assert_url,
             {
                 'RequestHeader': get_request_header(
-                    saferpay_json_api_spec, get_setting('account_id')
+                    saferpay_json_api_spec, self._get_setting('account_id')
                 ),
                 'Token': self.token,
             }
@@ -237,7 +242,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         """
         capture_data = {
             'RequestHeader': get_request_header(
-                saferpay_json_api_spec, get_setting('account_id')
+                saferpay_json_api_spec, self._get_setting('account_id')
             ),
             'TransactionReference': {
                 'TransactionId': assert_data['Transaction']['Id']
@@ -257,7 +262,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         """
         cancel_data = {
             'RequestHeader': get_request_header(
-                saferpay_json_api_spec, get_setting('account_id')
+                saferpay_json_api_spec, self._get_setting('account_id')
             ),
             'TransactionReference': {
                 'TransactionId': assert_data['Transaction']['Id']
