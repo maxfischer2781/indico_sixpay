@@ -42,9 +42,10 @@ from indico.modules.events.payment import (
     PaymentEventSettingsFormBase,
     PaymentPluginMixin,
     PaymentPluginSettingsFormBase)
-from indico.modules.events.payment.models.transactions import PaymentTransaction
-from indico.modules.events.payment.util import register_transaction
-from indico.modules.events.payment.models.transactions import TransactionAction
+from indico.modules.events.payment.models.transactions import (
+    PaymentTransaction,
+    TransactionAction
+)
 
 
 from .utility import (
@@ -299,11 +300,9 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
             provider=provider,
             data={'Init_PP_response': init_response}
         ):
-            data['registration'].transaction.data = {'Init_PP_response': init_response}
-        # data['Token'] = init_response['Token']
-        # data['registration'].transaction.data['Token'] = init_response['Token']
-        self.logger.info('Transaction: %s' % data['registration'].transaction.data)
-        
+            data['registration'].transaction.data = {
+                'Init_PP_response': init_response
+            }
         return data
 
     @staticmethod

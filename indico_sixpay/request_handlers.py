@@ -28,7 +28,6 @@ from werkzeug.exceptions import BadRequest
 from indico.modules.events.payment.models.transactions import TransactionAction
 from indico.modules.events.payment.notifications \
     import notify_amount_inconsistency
-from indico.modules.events.payment.util import register_transaction
 from indico.modules.events.registration.models.registrations \
     import Registration
 from indico.web.flask.util import url_for
@@ -66,7 +65,9 @@ class BaseRequestHandler(RH):
         self.registration = Registration.find_first(uuid=request.args['token'])
         if not self.registration:
             raise BadRequest
-        self.token = self.registration.transaction.data['Init_PP_response']['Token']
+        self.token = (
+            self.registration.transaction.data['Init_PP_response']['Token']
+        )
 
     def _get_setting(self, setting):
         return get_setting(setting, self.registration.registration_form.event)
@@ -160,9 +161,7 @@ class SixPayResponseHandler(BaseRequestHandler):
         )
         try:
             response.raise_for_status()
-        except:
-            current_plugin.logger.error(str(data))
-            current_plugin.logger.error(response.text)
+        except requests.HTTPError:
             raise TransactionFailure(
                 step=task,
                 details=response.text
@@ -198,7 +197,6 @@ class SixPayResponseHandler(BaseRequestHandler):
             return False
         old = prev_transaction.data.get('Transaction')
         new = transaction_data.get('Transaction')
-        current_plugin.logger.info('Old transacton data: %s' %old)
         return (
             old['OrderId'] == new['OrderId']
             & old['Type'] == new['Type']
