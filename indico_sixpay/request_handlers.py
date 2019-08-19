@@ -42,7 +42,8 @@ from .utility import (
     saferpay_pp_assert_url,
     saferpay_pp_capture_url,
     saferpay_json_api_spec,
-    saferpay_pp_cancel_url
+    saferpay_pp_cancel_url,
+    provider
 )
 
 # RH from indico.web.rh
@@ -62,10 +63,10 @@ class BaseRequestHandler(RH):
     CSRF_ENABLED = False
 
     def _process_args(self):
-        self.token = request.args['token']
-        self.registration = Registration.find_first(uuid=self.token)
+        self.registration = Registration.find_first(uuid=request.args['token'])
         if not self.registration:
             raise BadRequest
+        self.token = self.registration.transaction.data['Init_PP_response']['Token']
 
     def _get_setting(self, setting):
         return get_setting(setting, self.registration.registration_form.event)
@@ -127,7 +128,7 @@ class SixPayResponseHandler(BaseRequestHandler):
                 capture_response = self._capture_transaction(assert_response)
                 assert_response['CaptureResponse'] = capture_response
                 self._verify_amount(assert_response)
-                self._register_transaction(assert_response)
+                self._register_payment(assert_response)
         except TransactionFailure as err:
             current_plugin.logger.warning(
                 "SixPay transaction failed during %s: %s"
@@ -157,8 +158,11 @@ class SixPayResponseHandler(BaseRequestHandler):
         response = requests.post(
             request_url, json=data, auth=credentials
         )
-        response.raise_for_status()
-        if response.status_code != requests.codes.ok:
+        try:
+            response.raise_for_status()
+        except:
+            current_plugin.logger.error(str(data))
+            current_plugin.logger.error(response.text)
             raise TransactionFailure(
                 step=task,
                 details=response.text
@@ -180,17 +184,21 @@ class SixPayResponseHandler(BaseRequestHandler):
                 'Token': self.token,
             }
         )
-        assert_response.raise_for_status()
         if assert_response.status_code == requests.codes.ok:
             return assert_response.json()
 
     def _is_duplicate_transaction(self, transaction_data):
         """Check if this transaction has already been recorded."""
         prev_transaction = self.registration.transaction
-        if not prev_transaction or prev_transaction.provider != 'sixpay':
+        if (
+            not prev_transaction
+            or prev_transaction.provider != 'sixpay'
+            or 'Transaction' not in prev_transaction.data
+        ):
             return False
         old = prev_transaction.data.get('Transaction')
         new = transaction_data.get('Transaction')
+        current_plugin.logger.info('Old transacton data: %s' %old)
         return (
             old['OrderId'] == new['OrderId']
             & old['Type'] == new['Type']
@@ -215,8 +223,8 @@ class SixPayResponseHandler(BaseRequestHandler):
         """
         expected_amount = float(self.registration.price)
         expected_currency = self.registration.currency
-        amount = float(assert_data['Transaction']['Value'])
-        currency = assert_data['Transaction']['CurrencyCode']
+        amount = float(assert_data['Transaction']['Amount']['Value'])
+        currency = assert_data['Transaction']['Amount']['CurrencyCode']
         if (
             to_small_currency(expected_amount, expected_currency) == amount
             and expected_currency == currency
@@ -251,7 +259,6 @@ class SixPayResponseHandler(BaseRequestHandler):
         capture_response = self._perform_request(
             'capture', saferpay_pp_capture_url, capture_data
         )
-        capture_response.raise_for_status()
         return capture_response.json()
 
     def _cancel_transaction(self, assert_data):
@@ -271,29 +278,31 @@ class SixPayResponseHandler(BaseRequestHandler):
         cancel_response = self._perform_request(
             'cancel', saferpay_pp_cancel_url, cancel_data
         )
-        cancel_response.raise_for_status()
         return cancel_response.json()
 
-    def _register_transaction(self, assert_data):
-        """Register the transaction persistently within Indico."""
-        register_transaction(
+    def _register_payment(self, assert_data):
+        """Register the transaction as paid."""
+        self.registration.transaction.create_next(
             registration=self.registration,
-            # SixPay uses SMALLEST currency, Indico expects LARGEST currency
-            amount=to_large_currency(
-                float(assert_data['Transaction']['Value']),
-                assert_data['Transaction']['CurrencyCode']
-            ),
-            currency=assert_data['Transaction']['CurrencyCode'],
+            amount=self.registration.transaction.amount,
+            currency=self.registration.transaction.currency,
             action=TransactionAction.complete,
-            provider='sixpay',
-            data=assert_data,
+            provider=provider
         )
+        self.registration.update_state(paid=True)
 
 
 class UserCancelHandler(BaseRequestHandler):
     """User Message on cancelled payment."""
 
     def _process(self):
+        self.registration.transaction.create_next(
+            registration=self.registration,
+            amount=self.registration.transaction.amount,
+            currency=self.registration.transaction.currency,
+            action=TransactionAction.reject,
+            provider=provider
+        )
         flash(gettext('You cancelled the payment.'), 'info')
         return redirect(url_for(
             'event_registration.display_regform',
@@ -305,6 +314,13 @@ class UserFailureHandler(BaseRequestHandler):
     """User Message on failed payment."""
 
     def _process(self):
+        self.registration.transaction.create_next(
+            registration=self.registration,
+            amount=self.registration.transaction.amount,
+            currency=self.registration.transaction.currency,
+            action=TransactionAction.reject,
+            provider=provider
+        )
         flash(gettext('Your payment has failed.'), 'info')
         return redirect(url_for(
             'event_registration.display_regform',

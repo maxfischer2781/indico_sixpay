@@ -41,11 +41,15 @@ from indico.core.plugins import IndicoPlugin, url_for_plugin
 from indico.modules.events.payment import (
     PaymentEventSettingsFormBase,
     PaymentPluginMixin,
-    PaymentPluginSettingsFormBase
-)
+    PaymentPluginSettingsFormBase)
+from indico.modules.events.payment.models.transactions import PaymentTransaction
+from indico.modules.events.payment.util import register_transaction
+from indico.modules.events.payment.models.transactions import TransactionAction
+
 
 from .utility import (
-    gettext, to_small_currency, get_request_header, get_terminal_id
+    gettext, to_small_currency, get_request_header, get_terminal_id,
+    provider
 )
 # blueprint mounts the request handlers onto URLs
 from .blueprint import blueprint
@@ -285,7 +289,21 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
                 plugin_settings['username'], plugin_settings['password'])
         )
         data['payment_url'] = init_response['RedirectUrl']
-        data['Token'] = init_response['Token']
+
+        # create pending transaction and store Saferpay transaction token
+        if not PaymentTransaction.create_next(
+            registration=data['registration'],
+            amount=data['amount'],
+            currency=data['currency'],
+            action=TransactionAction.pending,
+            provider=provider,
+            data={'Init_PP_response': init_response}
+        ):
+            data['registration'].transaction.data = {'Init_PP_response': init_response}
+        # data['Token'] = init_response['Token']
+        # data['registration'].transaction.data['Token'] = init_response['Token']
+        self.logger.info('Transaction: %s' % data['registration'].transaction.data)
+        
         return data
 
     @staticmethod

@@ -37,6 +37,9 @@ saferpay_pp_assert_url = 'Payment/v1/PaymentPage/Assert'
 saferpay_pp_capture_url = 'Payment/v1/Transaction/Capture'
 saferpay_pp_cancel_url = 'Payment/v1/Transaction/Cancel'
 
+# provider string
+provider = 'sixpay'
+
 # currencies for which the major to minor currency ratio
 # is not a multiple of 10
 NON_DECIMAL_CURRENCY = {'MRU', 'MGA'}
