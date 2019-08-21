@@ -31,11 +31,12 @@ from werkzeug.exceptions import (
     InternalServerError as HTTPInternalServerError
 )
 
-from wtforms.fields import StringField, PasswordField
+from wtforms.fields import StringField
 from wtforms.fields.html5 import URLField
 from wtforms.validators import (
     DataRequired, Optional, Regexp, Length, Email, ValidationError
 )
+from indico.web.forms.fields import IndicoPasswordField
 
 from indico.core.plugins import IndicoPlugin, url_for_plugin
 from indico.modules.events.payment import (
@@ -152,10 +153,11 @@ class PluginSettingsForm(PaymentPluginSettingsFormBase):
         validators=[DataRequired()],
         description=gettext('SaferPay JSON API User name.')
     )
-    password = PasswordField(
+    password = IndicoPasswordField(
         label=gettext('Password'),
         validators=[DataRequired()],
-        description=gettext('SaferPay JSON API User password.')
+        description=gettext('SaferPay JSON API User password.'),
+        toggle=True,
     )
     account_id = StringField(
         label='Account ID',
@@ -202,9 +204,9 @@ class EventSettingsForm(PaymentEventSettingsFormBase):
     """Configuration form for the Plugin for a specific event."""
 
     # every setting may be overwritten for each event
-    url = PluginSettingsForm.url
-    username = PluginSettingsForm.username
-    password = PluginSettingsForm.password
+    #url = PluginSettingsForm.url
+    #username = PluginSettingsForm.username
+    #password = PluginSettingsForm.password
     account_id = PluginSettingsForm.account_id
     order_description = PluginSettingsForm.order_description
     order_identifier = PluginSettingsForm.order_identifier
@@ -242,9 +244,9 @@ class SixpayPaymentPlugin(PaymentPluginMixin, IndicoPlugin):
     default_event_settings = {
         'enabled': False,
         'method_name': None,
-        'url': None,
-        'username': None,
-        'password': None,
+        # 'url': None,
+        # 'username': None,
+        # 'password': None,
         'account_id': None,
         'order_description': None,
         'order_identifier': None,
