@@ -1,3 +1,5 @@
+**The SixPay SaferPay API is no longer accessible.** This plugin does not support the predecessor API and has thus been yanked from PyPI.
+
 # Indico 2 EPayment plugin for SIX Payment Services
 
 Plugin for the Indico 2 event/conference management system, enabling support for SIX Payment Service.
